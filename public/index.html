@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aethelgard: Legacy of Shadows</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #050508; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; user-select: none; }
+
+    #game-canvas { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: block; background: #0c0c12; }
+
+    /* Modal Login */
+    #auth-screen {
+      position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(5, 5, 8, 0.95); display: flex; justify-content: center; align-items: center; z-index: 1000;
+    }
+    .auth-box {
+      background: #15151e; border: 2px solid #f0a500; border-radius: 8px; padding: 30px; width: 360px;
+      box-shadow: 0 0 35px rgba(240, 165, 0, 0.25); text-align: center;
+    }
+    .auth-box h1 { font-size: 26px; color: #f0a500; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 2px; }
+    .auth-box h2 { font-size: 11px; color: #888; margin-bottom: 20px; letter-spacing: 1px; }
+    .input-group { margin-bottom: 15px; text-align: left; }
+    .input-group label { display: block; font-size: 11px; color: #aaa; margin-bottom: 5px; text-transform: uppercase; }
+    .input-group input, .input-group select {
+      width: 100%; padding: 10px; background: #0a0a0f; border: 1px solid #333344; border-radius: 4px; color: #fff; outline: none;
+    }
+    .btn {
+      width: 100%; padding: 12px; background: #f0a500; border: none; border-radius: 4px; color: #000; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 14px; text-transform: uppercase;
+    }
+    .btn:hover { background: #ffd000; }
+    .toggle-auth { margin-top: 15px; font-size: 12px; color: #aaa; cursor: pointer; text-decoration: underline; }
+
+    /* Interface HUD */
+    #ui-hud { position: absolute; top: 15px; left: 15px; z-index: 10; pointer-events: none; }
+    .status-bar { background: rgba(0,0,0,0.85); border: 1px solid #444; padding: 12px; border-radius: 6px; width: 240px; }
+    .bar { height: 12px; background: #222; border-radius: 3px; margin-top: 6px; overflow: hidden; }
+    .bar-fill-hp { height: 100%; background: #e63946; width: 100%; transition: width 0.2s; }
+    .bar-fill-mp { height: 100%; background: #457b9d; width: 100%; transition: width 0.2s; }
+
+    /* Barra de Hechizos / Habilidades */
+    #skill-bar {
+      position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+      display: flex; gap: 10px; background: rgba(0,0,0,0.8); border: 1px solid #444; padding: 8px; border-radius: 8px; z-index: 10;
+    }
+    .skill-slot {
+      width: 48px; height: 48px; background: #1a1a24; border: 1px solid #f0a500; border-radius: 6px;
+      display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 18px; color: #fff; cursor: pointer;
+    }
+    .skill-slot:hover { background: #333348; }
+
+    #chat-log {
+      position: absolute; bottom: 20px; left: 20px; width: 320px; height: 140px;
+      background: rgba(0,0,0,0.75); border: 1px solid #333; border-radius: 4px; padding: 8px; overflow-y: auto; font-size: 12px; z-index: 10;
+    }
+    #chat-log div { margin-bottom: 4px; color: #ddd; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <!-- Modal Login -->
+  <div id="auth-screen">
+    <div class="auth-box">
+      <h1>Aethelgard</h1>
+      <h2>Legacy of Shadows</h2>
+      <div id="auth-error" style="color: #ff4d4d; font-size: 12px; margin-bottom: 10px;"></div>
+      <form id="auth-form">
+        <div class="input-group">
+          <label>Usuario</label>
+          <input type="text" id="username" required placeholder="Ingresa tu usuario...">
+        </div>
+        <div class="input-group">
+          <label>Contraseña</label>
+          <input type="password" id="password" required placeholder="••••••••">
+        </div>
+        <div class="input-group hidden" id="class-select-group">
+          <label>Vocación</label>
+          <select id="character-class">
+            <option value="DarkKnight">Caballero Oscuro (Dark Knight)</option>
+            <option value="ElfMarksman">Cazador (Elf Marksman)</option>
+            <option value="ArcaneSorcerer">Mago Arcano (Arcane Sorcerer)</option>
+            <option value="Priest">Sacerdote Celestial (Priest)</option>
+          </select>
+        </div>
+        <button type="submit" class="btn" id="btn-submit">Ingresar</button>
+      </form>
+      <div class="toggle-auth" id="btn-toggle">¿No tienes cuenta? Regístrate aquí</div>
+    </div>
+  </div>
+
+  <!-- HUD del juego -->
+  <div id="ui-hud" class="hidden">
+    <div class="status-bar">
+      <strong id="hud-name">Personaje</strong> <small id="hud-class" style="color:#aaa;"></small>
+      <div class="bar"><div id="hp-bar" class="bar-fill-hp"></div></div>
+      <div class="bar"><div id="mp-bar" class="bar-fill-mp"></div></div>
+    </div>
+  </div>
+
+  <!-- Hotbar de Habilidades -->
+  <div id="skill-bar" class="hidden">
+    <div class="skill-slot" title="Ataque Básico (Tecla 1)" onclick="useSkill('physical')">⚔️</div>
+    <div class="skill-slot" title="Llamarada Mágica (Tecla 2)" onclick="useSkill('fireball')">🔥</div>
+  </div>
+
+  <div id="chat-log" class="hidden"></div>
+  <canvas id="game-canvas"></canvas>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+
+    // ==========================================
+    // SINTETIZADOR DE AUDIO WEB (Sin archivos externos)
+    // ==========================================
+    class SoundFX {
+      constructor() { this.ctx = null; }
+      init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
+      
+      playStep() {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(120, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(30, this.ctx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+        osc.connect(gain); gain.connect(this.ctx.destination);
+        osc.start(); osc.stop(this.ctx.currentTime + 0.08);
+      }
+
+      playSword() {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(600, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(100, this.ctx.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+        osc.connect(gain); gain.connect(this.ctx.destination);
+        osc.start(); osc.stop(this.ctx.currentTime + 0.15);
+      }
+
+      playMagic() {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(300, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(900, this.ctx.currentTime + 0.25);
+        gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+        osc.connect(gain); gain.connect(this.ctx.destination);
+        osc.start(); osc.stop(this.ctx.currentTime + 0.25);
+      }
+    }
+    const audio = new SoundFX();
+
+    // DOM & Variables del Juego
+    const authScreen = document.getElementById('auth-screen');
+    const authForm = document.getElementById('auth-form');
+    const authError = document.getElementById('auth-error');
+    const btnToggle = document.getElementById('btn-toggle');
+    const btnSubmit = document.getElementById('btn-submit');
+    const classGroup = document.getElementById('class-select-group');
+    const uiHud = document.getElementById('ui-hud');
+    const skillBar = document.getElementById('skill-bar');
+    const chatLog = document.getElementById('chat-log');
+    const canvas = document.getElementById('game-canvas');
+    const ctx = canvas.getContext('2d');
+
+    let isRegistering = false;
+    let myCharacter = null;
+    let worldPlayers = [];
+    let worldMonsters = [];
+    let spellEffects = [];
+    let selectedTargetId = null;
+    const TILE_SIZE = 64;
+
+    function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    btnToggle.addEventListener('click', () => {
+      isRegistering = !isRegistering;
+      btnSubmit.innerText = isRegistering ? 'Registrarse y Jugar' : 'Ingresar';
+      btnToggle.innerText = isRegistering ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Regístrate aquí';
+      classGroup.classList.toggle('hidden', !isRegistering);
+    });
+
+    authForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      audio.init();
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const selectedClass = document.getElementById('character-class').value;
+
+      const endpoint = isRegistering ? '/api/register' : '/api/login';
+      const bodyData = isRegistering ? { username, password, class: selectedClass } : { username, password };
+
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(bodyData)
+        });
+        const data = await res.json();
+        if (!res.ok) return authError.innerText = data.message;
+
+        socket.emit('join', { username }, (response) => {
+          if (response.success) {
+            myCharacter = response.char;
+            authScreen.classList.add('hidden');
+            uiHud.classList.remove('hidden');
+            skillBar.classList.remove('hidden');
+            chatLog.classList.remove('hidden');
+            document.getElementById('hud-name').innerText = myCharacter.name;
+            document.getElementById('hud-class').innerText = `(${myCharacter.class})`;
+            logMessage(`¡Bienvenido a Aethelgard! Usa W,A,S,D para moverte y cliqueea en monstruos para seleccionarlos.`);
+            requestAnimationFrame(gameLoop);
+          } else { authError.innerText = response.message; }
+        });
+      } catch (err) { authError.innerText = 'Error conectando con el servidor.'; }
+    });
+
+    // Teclado
+    document.addEventListener('keydown', (e) => {
+      if (!myCharacter) return;
+      const key = e.key.toLowerCase();
+      if (['w', 'a', 's', 'd'].includes(key)) {
+        audio.playStep();
+        if (key === 'w') socket.emit('move', { dx: 0, dy: -1 });
+        if (key === 's') socket.emit('move', { dx: 0, dy: 1 });
+        if (key === 'a') socket.emit('move', { dx: -1, dy: 0 });
+        if (key === 'd') socket.emit('move', { dx: 1, dy: 0 });
+      }
+      if (key === '1') useSkill('physical');
+      if (key === '2') useSkill('fireball');
+    });
+
+    // Clic para Seleccionar Monstruo
+    canvas.addEventListener('click', (e) => {
+      if (!myCharacter) return;
+      const offsetX = canvas.width / 2 - (myCharacter.gridX * TILE_SIZE + TILE_SIZE / 2);
+      const offsetY = canvas.height / 2 - (myCharacter.gridY * TILE_SIZE + TILE_SIZE / 2);
+      
+      const clickGridX = Math.floor((e.clientX - offsetX) / TILE_SIZE);
+      const clickGridY = Math.floor((e.clientY - offsetY) / TILE_SIZE);
+
+      const clickedMonster = worldMonsters.find(m => m.gridX === clickGridX && m.gridY === clickGridY);
+      if (clickedMonster) {
+        selectedTargetId = clickedMonster.id;
+        logMessage(`🎯 Objetivo seleccionado: ${clickedMonster.name}`);
+      }
+    });
+
+    function useSkill(skillType) {
+      if (!selectedTargetId) return logMessage('⚠️ ¡Selecciona un monstruo haciendo clic sobre él!');
+      if (skillType === 'physical') audio.playSword();
+      if (skillType === 'fireball') audio.playMagic();
+
+      // Efecto visual de magia
+      const targetM = worldMonsters.find(m => m.id === selectedTargetId);
+      if (targetM) {
+        spellEffects.push({
+          x: targetM.gridX, y: targetM.gridY, color: skillType === 'fireball' ? '#ff4500' : '#ffffff', radius: 10, maxRadius: 35
+        });
+      }
+
+      socket.emit('attack', { targetId: selectedTargetId, skillType });
+    }
+
+    socket.on('updateWorld', (data) => {
+      worldPlayers = data.players;
+      worldMonsters = data.monsters;
+      const me = worldPlayers.find(p => p.id === myCharacter.id);
+      if (me) {
+        myCharacter.gridX = me.gridX;
+        myCharacter.gridY = me.gridY;
+        myCharacter.hp = me.hp;
+        document.getElementById('hp-bar').style.width = `${(me.hp / me.maxHp) * 100}%`;
+      }
+    });
+
+    socket.on('combatResult', (data) => {
+      logMessage(`⚔️ ${data.attackerName} infligió ${data.damage} de daño a ${data.targetName}`);
+    });
+
+    function logMessage(msg) {
+      const div = document.createElement('div'); div.innerText = msg;
+      chatLog.appendChild(div); chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    // ==========================================
+    // RENDERIZADO VISUAL & SPRITES
+    // ==========================================
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (myCharacter) {
+        const offsetX = canvas.width / 2 - (myCharacter.gridX * TILE_SIZE + TILE_SIZE / 2);
+        const offsetY = canvas.height / 2 - (myCharacter.gridY * TILE_SIZE + TILE_SIZE / 2);
+
+        // Suelo Grid
+        ctx.strokeStyle = '#181824'; ctx.lineWidth = 1;
+        for (let x = 0; x < 30; x++) {
+          for (let y = 0; y < 30; y++) {
+            ctx.strokeRect(x * TILE_SIZE + offsetX, y * TILE_SIZE + offsetY, TILE_SIZE, TILE_SIZE);
+          }
+        }
+
+        // Renderizar Monstruos
+        worldMonsters.forEach(m => {
+          const posX = m.gridX * TILE_SIZE + offsetX;
+          const posY = m.gridY * TILE_SIZE + offsetY;
+
+          // Dibujar Monstruo según Tipo
+          ctx.fillStyle = m.type === 'goblin' ? '#2a9d8f' : (m.type === 'skeleton' ? '#e9c46a' : '#e63946');
+          ctx.beginPath();
+          ctx.arc(posX + TILE_SIZE / 2, posY + TILE_SIZE / 2, m.type === 'boss' ? TILE_SIZE / 2.2 : TILE_SIZE / 3, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Marcador de Objetivo Seleccionado
+          if (m.id === selectedTargetId) {
+            ctx.strokeStyle = '#f0a500'; ctx.lineWidth = 3;
+            ctx.strokeRect(posX + 4, posY + 4, TILE_SIZE - 8, TILE_SIZE - 8);
+          }
+
+          // Barra de Vida
+          ctx.fillStyle = '#ff0000'; ctx.fillRect(posX + 8, posY - 10, TILE_SIZE - 16, 5);
+          ctx.fillStyle = '#00ff00'; ctx.fillRect(posX + 8, posY - 10, (TILE_SIZE - 16) * (m.hp / m.maxHp), 5);
+
+          // Nombre
+          ctx.fillStyle = '#fff'; ctx.font = '10px Arial'; ctx.textAlign = 'center';
+          ctx.fillText(m.name, posX + TILE_SIZE / 2, posY - 14);
+        });
+
+        // Renderizar Jugadores
+        worldPlayers.forEach(p => {
+          const posX = p.gridX * TILE_SIZE + offsetX;
+          const posY = p.gridY * TILE_SIZE + offsetY;
+
+          // Sprite / Armadura de Clase
+          const classColors = { DarkKnight: '#e63946', ElfMarksman: '#2a9d8f', ArcaneSorcerer: '#9d4edd', Priest: '#f4a261' };
+          ctx.fillStyle = classColors[p.class] || '#457b9d';
+          
+          ctx.beginPath();
+          ctx.arc(posX + TILE_SIZE / 2, posY + TILE_SIZE / 2, TILE_SIZE / 3, 0, Math.PI * 2);
+          ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+
+          // Nombre Jugador
+          ctx.fillStyle = '#fff'; ctx.font = 'bold 11px Arial'; ctx.textAlign = 'center';
+          ctx.fillText(p.name, posX + TILE_SIZE / 2, posY - 8);
+        });
+
+        // Efectos Mágicos de Partículas
+        spellEffects.forEach((ef, index) => {
+          const posX = ef.x * TILE_SIZE + offsetX + TILE_SIZE / 2;
+          const posY = ef.y * TILE_SIZE + offsetY + TILE_SIZE / 2;
+
+          ctx.strokeStyle = ef.color; ctx.lineWidth = 3;
+          ctx.beginPath(); ctx.arc(posX, posY, ef.radius, 0, Math.PI * 2); ctx.stroke();
+
+          ef.radius += 2;
+          if (ef.radius >= ef.maxRadius) spellEffects.splice(index, 1);
+        });
+      }
+
+      requestAnimationFrame(gameLoop);
+    }
+  </script>
+</body>
+</html>
