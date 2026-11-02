@@ -1,0 +1,21 @@
+# Dependencias e instalación
+node_modules/
+
+# Configuración local (el ejemplo sí se versiona)
+.env
+.env.local
+
+# Estado generado en tiempo de ejecución (cuentas y personajes de los jugadores)
+data/state.json
+data/state.json.tmp
+data/state.corrupt-*.json
+
+# Logs y artefactos de ejecución
+*.log
+srv.log
+srv.err.log
+e2e-live*.log
+
+# Sistema operativo
+Thumbs.db
+.DS_Store

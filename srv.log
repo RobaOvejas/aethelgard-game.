@@ -1,0 +1,14 @@
+[state] Usuarios cargados: 33 | Personajes: 33
+============================================================
+  AETHELGARD - LEGACY OF SHADOWS
+  Backend v2 | Node.js + Express + Socket.IO
+============================================================
+  URL: http://localhost:3100
+  Tick de mundo: 150 ms
+  Usuarios cargados: 33
+  Personajes cargados: 33
+  Monstruos activos: 16
+  Persistencia: D:\PROYECTO MMORPG\aethelgard-upgrade\data\state.json
+============================================================
+[socket] Conectado: demo
+[socket] Desconectado: demo

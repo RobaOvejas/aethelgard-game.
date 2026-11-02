@@ -1,0 +1,298 @@
+{
+  "steps": [
+    {
+      "name": "servidor + /api/health",
+      "status": "OK",
+      "detail": "{\"ok\":true,\"uptime\":3,\"players\":0,\"monsters\":21,\"version\":\"2.3.0\"}"
+    },
+    {
+      "name": "online / carga",
+      "status": "OK"
+    },
+    {
+      "name": "boot",
+      "status": "OK",
+      "detail": "{\"three\":\"object\",\"io\":\"function\",\"worldOk\":true,\"version\":\"2.3.0\"}"
+    },
+    {
+      "name": "versión 2.3.0 (cliente + servidor)",
+      "status": "OK",
+      "detail": "{\"cliente\":\"2.3.0\",\"servidor\":\"2.3.0\"}"
+    },
+    {
+      "name": "registro + entrada al mundo",
+      "status": "OK",
+      "detail": "{\"authError\":\"\",\"btn\":\"Conectando…\",\"hudHidden\":false,\"online\":true,\"transport\":\"online\",\"me\":\"hero5068757\"}"
+    },
+    {
+      "name": "estado del mundo",
+      "status": "OK",
+      "detail": "{\"online\":true,\"transport\":\"online\",\"me\":{\"name\":\"hero5068757\",\"cls\":\"ArcaneSorcerer\",\"hp\":800,\"maxHp\":800,\"gridX\":2,\"gridY\":0},\"players\":1,\"monsters\":21,\"drops\":0,\"fps\":\"118\",\"hotbar\":12}"
+    },
+    {
+      "name": "personajes KayKit (modelos + animaciones)",
+      "status": "OK",
+      "detail": "{\"assets\":{\"ready\":true,\"unavailable\":false,\"models\":[\"DarkKnight\",\"ElfMarksman\",\"ArcaneSorcerer\",\"Priest\"],\"clips\":67,\"ual\":true,\"ualClips\":42,\"animationSet\":\"ual\"},\"yo\":{\"id\":\"char_mvzg0zpndr93vx\",\"cls\":\"ArcaneSorcerer\",\"gltf\":true,\"clip\":\"UAL_Idle\",\"clipTime\":0.2,\"running\":true,\"weight\":1,\"mixerTime\":0.25,\"moving\":false,\"stepDelta\":0,\"want\":\"UAL_Idle\",\"ticks\":10,\"bones\":{\"hips\":{\"q\":[-0.048,-0.114,0.023,0.992],\"p\":[0,0.39,-0.02]},\"upperlegr\":{\"q\":[0.989,-0.121,0.002,-0.088],\"p\":[-0.17,0.11,0]},\"lowerlegr\":{\"q\":[0.195,0.359,-0.025,0.912],\"p\":[0,0.23,0]},\"footr\":{\"q\":[-0.515,-0.037,-0.168,0.84],\"p\":[0,0.15,0]},\"spine\":{\"q\":[0.085,0,0,0.996],\"p\":[0,0.19,0]},\"upperarml\":{\"q\":[-0.17,-0.667,-0.716,0.118],\"p\":[0.21,0.13,0]}}}}"
+    },
+    {
+      "name": "esqueletos KayKit (modelos + textura)",
+      "status": "OK",
+      "detail": "{\"models\":[\"skeleton\",\"skeleton_archer\",\"skeleton_mage\",\"skeleton_minion\"],\"textures\":{\"skeleton\":{\"meshes\":10,\"texturedMeshes\":9},\"skeleton_archer\":{\"meshes\":10,\"texturedMeshes\":9},\"skeleton_mage\":{\"meshes\":9,\"texturedMeshes\":8},\"skeleton_minion\":{\"meshes\":9,\"texturedMeshes\":8}},\"gltfMonsters\":7}"
+    },
+    {
+      "name": "escenario KayKit (árboles/rocas/hierba)",
+      "status": "OK",
+      "detail": "{\"ready\":true,\"unavailable\":false,\"models\":20,\"instances\":844}"
+    },
+    {
+      "name": "armas visibles + mano secundaria",
+      "status": "OK",
+      "detail": "{\"esperada\":\"item_17\",\"inicial\":{\"id\":\"char_mvzg0zpndr93vx\",\"cls\":\"ArcaneSorcerer\",\"weaponItem\":\"item_17\",\"weaponModel\":true,\"weaponBone\":true,\"offhandItem\":\"spellbook_closed\",\"offhandModel\":true,\"offhandBone\":true,\"rarityTint\":\"common\",\"helm\":null,\"helmItem\":null,\"helmVisible\":false,\"helmNodes\":[],\"weaponWorldY\":[0.21,-0.48,-0.85],\"weaponWorldPos\":[5.7,1.4,0.5],\"weaponWorldSize\":[1.16,1.81,2.4],\"weaponScreen\":[666,478,0.97],\"weaponMeshes\":[{\"name\":\"staff\",\"visible\":true,\"hiddenParent\":false,\"matVisible\":true,\"opacity\":1,\"transparent\":false,\"color\":\"ffffff\",\"hasMap\":true,\"verts\":498}],\"charPos\":[6,0,0],\"charScale\":1.13,\"handPos\":[5.4,1.2,0.7]},\"cambio\":{\"id\":\"char_mvzg0zpndr93vx\",\"cls\":\"ArcaneSorcerer\",\"weaponItem\":\"item_8\",\"weaponModel\":true,\"weaponBone\":true,\"offhandItem\":\"spellbook_closed\",\"offhandModel\":true,\"offhandBone\":true,\"rarityTint\":\"epic\",\"helm\":null,\"helmItem\":null,\"helmVisible\":false,\"helmNodes\":[],\"weaponWorldY\":[0.9,-0.24,0.36],\"weaponWorldPos\":[5.4,1.2,0.7],\"weaponWorldSize\":[2.46,1.18,1.56],\"weaponScreen\":[659,480,0.97],\"weaponMeshes\":[{\"name\":\"staff\",\"visible\":true,\"hiddenParent\":false,\"matVisible\":true,\"opacity\":1,\"transparent\":false,\"color\":\"ead6ff\",\"hasMap\":true,\"verts\":498}],\"charPos\":[6,0,0],\"charScale\":1.13,\"handPos\":[5.4,1.2,0.7]},\"offhand\":true}"
+    },
+    {
+      "name": "puntos de atributo (protocolo + UI)",
+      "status": "OK",
+      "detail": "{\"before\":{\"points\":0,\"str\":6,\"gold\":50,\"hasField\":true},\"buttons\":6,\"clicked\":true,\"after\":{\"points\":3,\"str\":6}}"
+    },
+    {
+      "name": "mercader comprar",
+      "status": "OK",
+      "detail": "{\"shop\":{\"stock\":9,\"buyRows\":9},\"after\":{\"gold\":10,\"inv\":1}}"
+    },
+    {
+      "name": "mercader vender",
+      "status": "OK",
+      "detail": "{\"gold\":13}"
+    },
+    {
+      "name": "monstruos nuevos",
+      "status": "OK",
+      "detail": "{\"types\":[\"goblin\",\"wolf\",\"specter\",\"ogre\",\"champion\",\"skeleton\",\"boss\",\"skeleton_archer\",\"skeleton_mage\",\"skeleton_minion\"],\"count\":21,\"elites\":1}"
+    },
+    {
+      "name": "movimiento WASD",
+      "status": "OK",
+      "detail": "{\"x\":2,\"y\":0} -> {\"x\":4,\"y\":0}"
+    },
+    {
+      "name": "selección de objetivo (Tab)",
+      "status": "OK",
+      "detail": "{\"first\":{\"id\":\"monster_1\",\"name\":\"Goblin Salvaje\",\"shown\":true,\"cls\":\"panel target-frame clickable show\",\"mons\":21},\"later\":{\"id\":\"monster_1\",\"name\":\"Goblin Salvaje\",\"shown\":true}}"
+    },
+    {
+      "name": "lanzar habilidades",
+      "status": "OK",
+      "detail": "{\"cds\":4,\"chat\":103,\"mp\":\"495 / 500\"}"
+    },
+    {
+      "name": "ventana btn-inv",
+      "status": "OK"
+    },
+    {
+      "name": "ventana btn-char",
+      "status": "OK"
+    },
+    {
+      "name": "ventana btn-quest",
+      "status": "OK"
+    },
+    {
+      "name": "ventana btn-map",
+      "status": "OK"
+    },
+    {
+      "name": "ventana btn-char",
+      "status": "OK"
+    },
+    {
+      "name": "ventana de grupo",
+      "status": "OK",
+      "detail": "{\"len\":286,\"text\":\"Aventureros conectadosNo hay otros aventureros conectadosJugadores en línea: 1\",\"state\":{\"party\":null,\"invite\":null}}"
+    },
+    {
+      "name": "rendimiento",
+      "status": "OK",
+      "detail": "{\"fps\":\"20\",\"ping\":\"574 ms\",\"net\":\"RED online\",\"hp\":\"800 / 800\",\"xp\":\"45 / 100\",\"gold\":\"13\",\"online\":1}"
+    },
+    {
+      "name": "demo / carga",
+      "status": "OK"
+    },
+    {
+      "name": "demo local",
+      "status": "OK",
+      "detail": "{\"entered\":true,\"transport\":\"local\",\"name\":\"DemoHero\",\"monsters\":19,\"worldOk\":true,\"chat\":3}"
+    },
+    {
+      "name": "yelmo visible (Knight)",
+      "status": "OK",
+      "detail": "{\"id\":\"local_penu4e6\",\"cls\":\"DarkKnight\",\"weaponItem\":\"item_1\",\"weaponModel\":true,\"weaponBone\":true,\"offhandItem\":\"shield_round\",\"offhandModel\":true,\"offhandBone\":true,\"rarityTint\":\"common\",\"helm\":\"item_5\",\"helmItem\":\"item_5\",\"helmVisible\":true,\"helmNodes\":[\"Knight_Helmet\",\"Knight_HelmetVisor\"],\"weaponWorldY\":[0.54,0.67,-0.51],\"weaponWorldPos\":[8.2,1.1,9.5],\"weaponWorldSize\":[1.56,1.86,1.41],\"weaponScreen\":[660,476,0.97],\"weaponMeshes\":[{\"name\":\"sword_1handed\",\"visible\":true,\"hiddenParent\":false,\"matVisible\":true,\"opacity\":1,\"transparent\":false,\"color\":\"ffffff\",\"hasMap\":true,\"verts\":358}],\"charPos\":[9,0,9],\"charScale\":1.18,\"handPos\":[8.3,0.8,9.4]}"
+    },
+    {
+      "name": "mercader demo",
+      "status": "OK",
+      "detail": "{\"shop\":{\"rows\":9,\"gold\":120},\"after\":{\"gold\":80,\"inv\":2,\"chat\":27}}"
+    },
+    {
+      "name": "mercader cantidad (x2)",
+      "status": "OK",
+      "detail": "{\"before\":{\"gold\":80,\"n\":0},\"after\":{\"gold\":56,\"n\":2},\"ok\":true}"
+    },
+    {
+      "name": "combate demo",
+      "status": "OK",
+      "detail": "{\"pos\":{\"x\":5,\"y\":5},\"target\":null,\"kills\":1,\"xp\":\"45 / 100\",\"hp\":\"1200 / 1200\",\"chat\":104,\"drops\":1}"
+    }
+  ],
+  "consoleErrors": [],
+  "consoleWarns": [],
+  "failedRequests": [],
+  "shots": [
+    "01-login.png",
+    "02-mundo.png",
+    "02f-esqueletos.png",
+    "02b-escenario.png",
+    "02c-arma-cetro.png",
+    "05b-atributos.png",
+    "04b-mercader.png",
+    "03-combate.png",
+    "04-inventario.png",
+    "05-personaje.png",
+    "06-misiones.png",
+    "07-mapa.png",
+    "08-personaje.png",
+    "09b-grupo.png",
+    "09-camara.png",
+    "10-demo-local.png",
+    "02e-yelmo.png",
+    "12b-demo-cantidad.png",
+    "12-demo-mercader.png",
+    "11-demo-combate.png"
+  ],
+  "problems": [],
+  "data": {
+    "health": {
+      "ok": true,
+      "uptime": 3,
+      "players": 0,
+      "monsters": 21,
+      "version": "2.3.0"
+    },
+    "boot": {
+      "three": "object",
+      "io": "function",
+      "worldOk": true,
+      "version": "2.3.0"
+    },
+    "serverHits": [
+      "[socket] Conectado: hero5068757",
+      "[socket] Desconectado: hero5068757"
+    ],
+    "authState": {
+      "authError": "",
+      "btn": "Conectando…",
+      "hudHidden": false,
+      "online": true,
+      "transport": "online",
+      "me": "hero5068757"
+    },
+    "world": {
+      "online": true,
+      "transport": "online",
+      "me": {
+        "name": "hero5068757",
+        "cls": "ArcaneSorcerer",
+        "hp": 800,
+        "maxHp": 800,
+        "gridX": 2,
+        "gridY": 0
+      },
+      "players": 1,
+      "monsters": 21,
+      "drops": 0,
+      "fps": "118",
+      "hotbar": 12
+    },
+    "shop": {
+      "stock": 9,
+      "buyRows": 9
+    },
+    "afterBuy": {
+      "gold": 10,
+      "inv": 1
+    },
+    "afterSell": {
+      "gold": 13
+    },
+    "monsters": {
+      "types": [
+        "goblin",
+        "wolf",
+        "specter",
+        "ogre",
+        "champion",
+        "skeleton",
+        "boss",
+        "skeleton_archer",
+        "skeleton_mage",
+        "skeleton_minion"
+      ],
+      "count": 21,
+      "elites": 1
+    },
+    "combat": {
+      "cds": 4,
+      "chat": 103,
+      "mp": "495 / 500"
+    },
+    "perf": {
+      "fps": "20",
+      "ping": "574 ms",
+      "net": "RED online",
+      "hp": "800 / 800",
+      "xp": "45 / 100",
+      "gold": "13",
+      "online": 1
+    },
+    "demo": {
+      "entered": true,
+      "transport": "local",
+      "name": "DemoHero",
+      "monsters": 19,
+      "worldOk": true,
+      "chat": 3
+    },
+    "demoShop": {
+      "rows": 9,
+      "gold": 120
+    },
+    "demoBuy": {
+      "gold": 80,
+      "inv": 2,
+      "chat": 27
+    },
+    "demoQty": {
+      "before": {
+        "gold": 80,
+        "n": 0
+      },
+      "after": {
+        "gold": 56,
+        "n": 2
+      },
+      "ok": true
+    },
+    "demoCombat": {
+      "pos": {
+        "x": 5,
+        "y": 5
+      },
+      "target": null,
+      "kills": 1,
+      "xp": "45 / 100",
+      "hp": "1200 / 1200",
+      "chat": 104,
+      "drops": 1
+    }
+  }
+}
