@@ -1,244 +1,286 @@
 {
   "version": 2,
-  "savedAt": 1793637098790,
+  "savedAt": 1793659418420,
   "users": [
     {
       "id": "user_mvu4jr991znwif",
       "username": "demo",
       "passwordHash": "$2a$10$VHvicLjYhatrjp0DK3t.X./1Dlo.tcUJ/E0jRanPk0beDw3Dl1bTG",
       "characterId": "char_mvu4jr99agy1c8",
-      "createdAt": 1793313488061
+      "createdAt": 1793313488061,
+      "admin": false
     },
     {
       "id": "user_mvu4jrdpo61zrs",
       "username": "kundun",
       "passwordHash": "$2a$10$3QRLTrZmSvDUWXxxjkeoq.rptlfOdY0YyHjMCOSTqCAZx9ml6.ISm",
       "characterId": "char_mvu4jrdpaqn6i5",
-      "createdAt": 1793313488221
+      "createdAt": 1793313488221,
+      "admin": false
     },
     {
       "id": "user_mvu4so3w78bu5h",
       "username": "demo760190",
       "passwordHash": "$2a$10$dgVDDzVUSE3Vgy5FSS.fV.OltDl8kUiH.wigRgCdxC.YqS6KfQ/NW",
       "characterId": "char_mvu4so3wu17djo",
-      "createdAt": 1793313903884
+      "createdAt": 1793313903884,
+      "admin": false
     },
     {
       "id": "user_mvu4yic4ng8dhu",
       "username": "hero4164747",
       "passwordHash": "$2a$10$6kTs4uUsuB7KgNA.XKZuEemTVGeh48V8OPpsg4hlu55BGwiTh4CPe",
       "characterId": "char_mvu4yic5q7iokt",
-      "createdAt": 1793314176341
+      "createdAt": 1793314176341,
+      "admin": false
     },
     {
       "id": "user_mvu5225ywk0jzr",
       "username": "hero4334116",
       "passwordHash": "$2a$10$q429gz2puzudyE/YjIwRu.jyDmXF1gDnJYtenoGutcOkhCEyK6Una",
       "characterId": "char_mvu5225zdubtwu",
-      "createdAt": 1793314342006
+      "createdAt": 1793314342006,
+      "admin": false
     },
     {
       "id": "user_mvu563ofk6mul3",
       "username": "hero4508668",
       "passwordHash": "$2a$10$OxKdYdJI9/gpzUwfnI750u.NVmheWq2mdPhZkd8Kf1M8pCEVxHePa",
       "characterId": "char_mvu563oftpq17p",
-      "createdAt": 1793314530591
+      "createdAt": 1793314530591,
+      "admin": false
     },
     {
       "id": "user_mvu5enfy05azwx",
       "username": "hero4911861",
       "passwordHash": "$2a$10$9IkrGoWwzKWIqcQZ5XvzhuMwJEKT.peKRwyf2TjHa1PCQaBmNXsS6",
       "characterId": "char_mvu5enfybukqmd",
-      "createdAt": 1793314929454
+      "createdAt": 1793314929454,
+      "admin": false
     },
     {
       "id": "user_mvu5k6tgobgf21",
       "username": "hero5181965",
       "passwordHash": "$2a$10$0JzsW9mxUnAGSNbDpKPrzeIbDe2OKH8vW1aOVCSM4eLAcWitRcCGW",
       "characterId": "char_mvu5k6tgay4hzv",
-      "createdAt": 1793315187844
+      "createdAt": 1793315187844,
+      "admin": false
     },
     {
       "id": "user_mvu5seh5g8s08k",
       "username": "hero5549454",
       "passwordHash": "$2a$10$lcZgfwZMiLnhi0HbExfxleozsmMrr6YoBJ0WmzB2Ndbqsqrh/kjrO",
       "characterId": "char_mvu5seh54gs7ys",
-      "createdAt": 1793315571017
+      "createdAt": 1793315571017,
+      "admin": false
     },
     {
       "id": "user_mvu7ry4a79lp75",
       "username": "hero8878904",
       "passwordHash": "$2a$10$0PmbExV2hLjU27IUxh0jq.WIRaskGHl6KL0UPUXWxEXifO01e5Zo6",
       "characterId": "char_mvu7ry4az2jzq4",
-      "createdAt": 1793318909050
+      "createdAt": 1793318909050,
+      "admin": false
     },
     {
       "id": "user_mvu86dwze5hf7t",
       "username": "hero9561476",
       "passwordHash": "$2a$10$cZxHldQHzN0JZnQWCD2hHeJch1zhFqX9mgmPEKIHvpQ8GZCClMWcC",
       "characterId": "char_mvu86dwzeioogx",
-      "createdAt": 1793319582707
+      "createdAt": 1793319582707,
+      "admin": false
     },
     {
       "id": "user_mvu8gvdddc1ilt",
       "username": "hero0050394",
       "passwordHash": "$2a$10$aNFdQsX1ygFYRWptqcC8..NDjhi8OtQ0sW9prsNaztdmTefcTmW9W",
       "characterId": "char_mvu8gvdddec5pw",
-      "createdAt": 1793320071889
+      "createdAt": 1793320071889,
+      "admin": false
     },
     {
       "id": "user_mvu8s2shf6mfru",
       "username": "hero0591352",
       "passwordHash": "$2a$10$ga61gppRbVFOTMfnzPv3v.6xgSnXXfU.9lrtFlxwe5WjU8yp1hn/W",
       "characterId": "char_mvu8s2shewt4a3",
-      "createdAt": 1793320594721
+      "createdAt": 1793320594721,
+      "admin": false
     },
     {
       "id": "user_mvv3ryj6ab0pyn",
       "username": "leadtest",
       "passwordHash": "$2a$10$8xr1kl9hAQGaf3OfEKlNoux.mDLpo3hDPlLJpiGOOt3VvD2bQ2v0G",
       "characterId": "char_mvv3ryj78hnvvb",
-      "createdAt": 1793372657298
+      "createdAt": 1793372657298,
+      "admin": false
     },
     {
       "id": "user_mvv4tlt3v6uaf5",
       "username": "probe4413326",
       "passwordHash": "$2a$10$PfMpEzEXDOJhX2xNi4/by.b.WOln6zHhj5zmEQquKrvCNi30I7riC",
       "characterId": "char_mvv4tlt3fccba8",
-      "createdAt": 1793374413735
+      "createdAt": 1793374413735,
+      "admin": false
     },
     {
       "id": "user_mvv4wy4k5juliv",
       "username": "hero4547943",
       "passwordHash": "$2a$10$BZU7I3SaqvVMFwTraTgks.mCjzb1.pBuNL4JzwzD087olluC7pG16",
       "characterId": "char_mvv4wy4kz4kzmy",
-      "createdAt": 1793374569668
+      "createdAt": 1793374569668,
+      "admin": false
     },
     {
       "id": "user_mvv7xg7ua08mhb",
       "username": "hero9609844",
       "passwordHash": "$2a$10$Ai0x2TjSiarRQmgbaIcp5OYKCOIb/j/hfmmsoqDOe3doq8hGlteJS",
       "characterId": "char_mvv7xg7ucfpm2p",
-      "createdAt": 1793379631962
+      "createdAt": 1793379631962,
+      "admin": false
     },
     {
       "id": "user_mvv8gn9ec3c06q",
       "username": "hero0503054",
       "passwordHash": "$2a$10$WJ6yVu691hR4jOQxPW9t0ui9FQGvdOn3pDQza.rGnYakya.rqE1ZG",
       "characterId": "char_mvv8gn9ea9mu4v",
-      "createdAt": 1793380527554
+      "createdAt": 1793380527554,
+      "admin": false
     },
     {
       "id": "user_mvv8r4jcq4ko0n",
       "username": "hero0996548",
       "passwordHash": "$2a$10$QDY26s/XAwEgQWbTjqy9C.CiI57PJ1fG5B.lpUb9Vmas6ypJKVDsi",
       "characterId": "char_mvv8r4jc3gq94a",
-      "createdAt": 1793381016504
+      "createdAt": 1793381016504,
+      "admin": false
     },
     {
       "id": "user_mvvacp8kv3vsps",
       "username": "dk02488",
       "passwordHash": "$2a$10$gwJjRwOR/orrQWoEbETU4uW67lN/SEzpDaqDxtWHAGI2I37p46Xbq",
       "characterId": "char_mvvacp8kphpkfq",
-      "createdAt": 1793383702724
+      "createdAt": 1793383702724,
+      "admin": false
     },
     {
       "id": "user_mvvacpdt0y5q7u",
       "username": "elf02488",
       "passwordHash": "$2a$10$nDzVmZjvB/N1mceZu0P57OaZewsg4iVllIBaRNfttfRmvTchbCPJm",
       "characterId": "char_mvvacpdtlwxr1k",
-      "createdAt": 1793383702913
+      "createdAt": 1793383702913,
+      "admin": false
     },
     {
       "id": "user_mvvacpintqal51",
       "username": "mage02488",
       "passwordHash": "$2a$10$8MZ2hlo193ErDUN24Ioh9eGnTGARXQ1YGL5cK1NNSb1VXACgBVBwm",
       "characterId": "char_mvvacpinnjlqr5",
-      "createdAt": 1793383703087
+      "createdAt": 1793383703087,
+      "admin": false
     },
     {
       "id": "user_mvvacpn9v1jma1",
       "username": "pri02488",
       "passwordHash": "$2a$10$IQ7uyiScyu5q5w9ztUApR.YpL41MsEsWi/SbEtHNVM6vTHpg3D0A6",
       "characterId": "char_mvvacpn9413sl2",
-      "createdAt": 1793383703253
+      "createdAt": 1793383703253,
+      "admin": false
     },
     {
       "id": "user_mvvbiw357yuish",
       "username": "dk70955",
       "passwordHash": "$2a$10$JGfNGOQhM3QJsGU.Cn0igOTBGYOaYoE9kHHqke3JLBtVX75M4/tAS",
       "characterId": "char_mvvbiw35k3odby",
-      "createdAt": 1793385671153
+      "createdAt": 1793385671153,
+      "admin": false
     },
     {
       "id": "user_mvvbiw7u5ol2rs",
       "username": "elf70955",
       "passwordHash": "$2a$10$cvleZmyrbbr3PWux.mpBIuipc7CBKy.GKAIKYNwDUjA8vn8V3b2dO",
       "characterId": "char_mvvbiw7u9vysi2",
-      "createdAt": 1793385671322
+      "createdAt": 1793385671322,
+      "admin": false
     },
     {
       "id": "user_mvvbiwbooejtcs",
       "username": "mage70955",
       "passwordHash": "$2a$10$jL0FwtHhYUBQ.Hqy.i9W8e/VueVBh0isns4rgcl3zsxMcwETiuTp.",
       "characterId": "char_mvvbiwbofslwh0",
-      "createdAt": 1793385671460
+      "createdAt": 1793385671460,
+      "admin": false
     },
     {
       "id": "user_mvvbiwf4ymy54t",
       "username": "pri70955",
       "passwordHash": "$2a$10$wLCD2jPWeo2QLIoUF2jI7un66PXFC8vLTGz7CP3uTbAE916DSAhcu",
       "characterId": "char_mvvbiwf4nj5wy7",
-      "createdAt": 1793385671584
+      "createdAt": 1793385671584,
+      "admin": false
     },
     {
       "id": "user_mvvd0zfqb8c2va",
       "username": "hero8138656",
       "passwordHash": "$2a$10$7bbeKk9CDE1b1oUzzZNgFOa3LeSPuRT99mb8TeFAmTabtztLU/.5W",
       "characterId": "char_mvvd0zfq3t9u5w",
-      "createdAt": 1793388194918
+      "createdAt": 1793388194918,
+      "admin": false
     },
     {
       "id": "user_mvvd9ecrlk5yja",
       "username": "hero8563609",
       "passwordHash": "$2a$10$Co7FHq0RooSGleV9.M6NtuGqxOaP8J4O2ts3h4mRTnvDBwAoVX8ES",
       "characterId": "char_mvvd9ecrlkje5p",
-      "createdAt": 1793388587499
+      "createdAt": 1793388587499,
+      "admin": false
     },
     {
       "id": "user_mvvdiwst0b5ogl",
       "username": "hero9018741",
       "passwordHash": "$2a$10$Ta2NOoMXvSW3zfW3gvsuiuAiyMBMCIY0P4QH.wPKH1UqmJiXOQX2y",
       "characterId": "char_mvvdiwst3ttniw",
-      "createdAt": 1793389031309
+      "createdAt": 1793389031309,
+      "admin": false
     },
     {
       "id": "user_mvvi4scozm5adg",
       "username": "hero6752992",
       "passwordHash": "$2a$10$CpTqfykP/QN0uiHTWpPIs.jRq7xj5chieLgMPCeT.HSbLN120YY6a",
       "characterId": "char_mvvi4scomfaps6",
-      "createdAt": 1793396770440
+      "createdAt": 1793396770440,
+      "admin": false
     },
     {
       "id": "user_mvvol0j13igfqh",
       "username": "hero7584152",
       "passwordHash": "$2a$10$eZw.wueyLq9WM0P0pUVKp./Q1j/Y2NW6OGmhrKc3Ak1lrBRrR4Tmm",
       "characterId": "char_mvvol0j1smy3u3",
-      "createdAt": 1793407605229
+      "createdAt": 1793407605229,
+      "admin": false
     },
     {
       "id": "user_mvwe59w1kdieeo",
       "username": "hero0514184",
       "passwordHash": "$2a$10$FhqEzTjUyfGsioi2IFU.RO3aRnlebZkloGwLSBvFW2vzy5cc9s0/W",
       "characterId": "char_mvwe59w1axzqfn",
-      "createdAt": 1793450540881
+      "createdAt": 1793450540881,
+      "admin": false
     },
     {
       "id": "user_mvzcem6lmz0ehu",
       "username": "ualtest1811",
       "passwordHash": "$2a$10$G59dvJL/nW5TLFdm9FEF6Ou2.Ju6nK3blP48amTR1aUsL/FNlpK72",
       "characterId": "char_mvzcem6mhyn7l2",
-      "createdAt": 1793629016013
+      "createdAt": 1793629016013,
+      "admin": false
+    },
+    {
+      "id": "user_mvzpohb0npqne2",
+      "username": "Admin",
+      "passwordHash": "$2a$10$hwnu5BwEg6X.YQSLN8o2VOOfPW1wlatZZTKiqp1BQuBQ.MlqPcUI2",
+      "characterId": "char_mvzpohb0z3cq3m",
+      "createdAt": 1793651311260,
+      "admin": true
     }
   ],
   "characters": [
@@ -248,9 +290,9 @@
       "name": "demo",
       "class": "DarkKnight",
       "level": 4,
-      "exp": 467,
+      "exp": 421,
       "expNext": 857,
-      "hp": 0,
+      "hp": 1560,
       "maxHp": 1560,
       "mp": 280,
       "maxMp": 280,
@@ -259,8 +301,8 @@
       "food": 0,
       "maxFood": 100,
       "gold": 251,
-      "gridX": 29,
-      "gridY": 19,
+      "gridX": 0,
+      "gridY": 0,
       "baseStats": {
         "str": 24,
         "dex": 13,
@@ -292,9 +334,11 @@
       },
       "quests": [],
       "kills": 28,
-      "deaths": 3,
-      "dead": true,
-      "statPoints": 9
+      "deaths": 4,
+      "dead": false,
+      "statPoints": 9,
+      "admin": false,
+      "god": false
     },
     {
       "id": "char_mvu4jrdpaqn6i5",
@@ -340,7 +384,9 @@
       "kills": 5,
       "deaths": 0,
       "dead": false,
-      "statPoints": 3
+      "statPoints": 3,
+      "admin": false,
+      "god": false
     },
     {
       "id": "char_mvu4so3wu17djo",
@@ -381,7 +427,9 @@
       "kills": 0,
       "deaths": 0,
       "dead": false,
-      "statPoints": 0
+      "statPoints": 0,
+      "admin": false,
+      "god": false
     },
     {
       "id": "char_mvu4yic5q7iokt",
@@ -422,7 +470,9 @@
       "kills": 1,
       "deaths": 0,
       "dead": false,
-      "statPoints": 0
+      "statPoints": 0,
+      "admin": false,
+      "god": false
     },
     {
       "id": "char_mvu5225zdubtwu",
@@ -463,7 +513,9 @@
       "kills": 1,
       "deaths": 0,
       "dead": false,
-      "statPoints": 0
+      "statPoints": 0,
+      "admin": false,
+      "god": false
     },
     {
       "id": "char_mvu563oftpq17p",
@@ -504,7 +556,9 @@
       "kills": 1,
       "deaths": 0,
       "dead": false,
-      "statPoints": 0
+      "statPoints": 0,
+      "admin": false,
+      "god": false
     },
     {
       "id": "char_mvu5enfybukqmd",
@@ -550,7 +604,9 @@
       "kills": 1,
       "deaths": 0,
       "dead": false,
-      "statPoints": 0
+      "statPoints": 0,
+      "admin": false,
+      "god": false
     },
     {
       "id": "char_mvu5k6tgay4hzv",
@@ -596,7 +652,9 @@
       "kills": 1,
       "deaths": 0,
       "dead": false,
-      "statPoints": 0
+      "statPoints": 0,
+      "admin": false,
+      "god": false
     },
     {
       "id": "char_mvu5seh54gs7ys",
@@ -642,7 +700,9 @@
       "kills": 1,
       "deaths": 0,
       "dead": false,
-      "statPoints": 0
+      "statPoints": 0,
+      "admin": false,
+      "god": false
     },
     {
       "id": "char_mvu7ry4az2jzq4",
@@ -688,7 +748,9 @@
       "kills": 1,
       "deaths": 0,
       "dead": false,
-      "statPoints": 0
+      "statPoints": 0,
+      "admin": false,
+      "god": false
     },
     {
       "id": "char_mvu86dwzeioogx",
@@ -734,7 +796,9 @@
       "kills": 1,
       "deaths": 0,
       "dead": false,
-      "statPoints": 0
+      "statPoints": 0,
+      "admin": false,
+      "god": false
     },
     {
       "id": "char_mvu8gvdddec5pw",
@@ -780,7 +844,9 @@
       "kills": 1,
       "deaths": 0,
       "dead": false,
-      "statPoints": 0
+      "statPoints": 0,
+      "admin": false,
+      "god": false
     },
     {
       "id": "char_mvu8s2shewt4a3",
@@ -826,7 +892,9 @@
       "kills": 1,
       "deaths": 0,
       "dead": false,
-      "statPoints": 0
+      "statPoints": 0,
+      "admin": false,
+      "god": false
     },
     {
       "id": "char_mvv3ryj78hnvvb",
@@ -872,7 +940,9 @@
       "kills": 0,
       "deaths": 0,
       "dead": false,
-      "statPoints": 0
+      "statPoints": 0,
+      "admin": false,
+      "god": false
     },
     {
       "id": "char_mvv4tlt3fccba8",
@@ -918,7 +988,9 @@
       "kills": 0,
       "deaths": 0,
       "dead": false,
-      "statPoints": 0
+      "statPoints": 0,
+      "admin": false,
+      "god": false
     },
     {
       "id": "char_mvv4wy4kz4kzmy",
@@ -964,7 +1036,9 @@
       "kills": 1,
       "deaths": 0,
       "dead": false,
-      "statPoints": 0
+      "statPoints": 0,
+      "admin": false,
+      "god": false
     },
     {
       "id": "char_mvv7xg7ucfpm2p",
@@ -1010,7 +1084,9 @@
       "kills": 1,
       "deaths": 0,
       "dead": false,
-      "statPoints": 0
+      "statPoints": 0,
+      "admin": false,
+      "god": false
     },
     {
       "id": "char_mvv8gn9ea9mu4v",
@@ -1056,7 +1132,9 @@
       "kills": 1,
       "deaths": 0,
       "dead": false,
-      "statPoints": 0
+      "statPoints": 0,
+      "admin": false,
+      "god": false
     },
     {
       "id": "char_mvv8r4jc3gq94a",
@@ -1102,7 +1180,9 @@
       "kills": 1,
       "deaths": 0,
       "dead": false,
-      "statPoints": 0
+      "statPoints": 0,
+      "admin": false,
+      "god": false
     },
     {
       "id": "char_mvvacp8kphpkfq",
@@ -1148,7 +1228,9 @@
       "kills": 0,
       "deaths": 0,
       "dead": false,
-      "statPoints": 0
+      "statPoints": 0,
+      "admin": false,
+      "god": false
     },
     {
       "id": "char_mvvacpdtlwxr1k",
@@ -1194,7 +1276,9 @@
       "kills": 0,
       "deaths": 0,
       "dead": false,
-      "statPoints": 0
+      "statPoints": 0,
+      "admin": false,
+      "god": false
     },
     {
       "id": "char_mvvacpinnjlqr5",
@@ -1240,7 +1324,9 @@
       "kills": 0,
       "deaths": 0,
       "dead": false,
-      "statPoints": 0
+      "statPoints": 0,
+      "admin": false,
+      "god": false
     },
     {
       "id": "char_mvvacpn9413sl2",
@@ -1286,7 +1372,9 @@
       "kills": 0,
       "deaths": 0,
       "dead": false,
-      "statPoints": 0
+      "statPoints": 0,
+      "admin": false,
+      "god": false
     },
     {
       "id": "char_mvvbiw35k3odby",
@@ -1332,7 +1420,9 @@
       "kills": 0,
       "deaths": 0,
       "dead": false,
-      "statPoints": 0
+      "statPoints": 0,
+      "admin": false,
+      "god": false
     },
     {
       "id": "char_mvvbiw7u9vysi2",
@@ -1378,7 +1468,9 @@
       "kills": 0,
       "deaths": 0,
       "dead": false,
-      "statPoints": 0
+      "statPoints": 0,
+      "admin": false,
+      "god": false
     },
     {
       "id": "char_mvvbiwbofslwh0",
@@ -1424,7 +1516,9 @@
       "kills": 0,
       "deaths": 0,
       "dead": false,
-      "statPoints": 0
+      "statPoints": 0,
+      "admin": false,
+      "god": false
     },
     {
       "id": "char_mvvbiwf4nj5wy7",
@@ -1470,7 +1564,9 @@
       "kills": 0,
       "deaths": 0,
       "dead": false,
-      "statPoints": 0
+      "statPoints": 0,
+      "admin": false,
+      "god": false
     },
     {
       "id": "char_mvvd0zfq3t9u5w",
@@ -1516,7 +1612,9 @@
       "kills": 0,
       "deaths": 0,
       "dead": false,
-      "statPoints": 0
+      "statPoints": 0,
+      "admin": false,
+      "god": false
     },
     {
       "id": "char_mvvd9ecrlkje5p",
@@ -1562,7 +1660,9 @@
       "kills": 1,
       "deaths": 0,
       "dead": false,
-      "statPoints": 0
+      "statPoints": 0,
+      "admin": false,
+      "god": false
     },
     {
       "id": "char_mvvdiwst3ttniw",
@@ -1608,7 +1708,9 @@
       "kills": 1,
       "deaths": 0,
       "dead": false,
-      "statPoints": 0
+      "statPoints": 0,
+      "admin": false,
+      "god": false
     },
     {
       "id": "char_mvvi4scomfaps6",
@@ -1654,7 +1756,9 @@
       "kills": 1,
       "deaths": 0,
       "dead": false,
-      "statPoints": 0
+      "statPoints": 0,
+      "admin": false,
+      "god": false
     },
     {
       "id": "char_mvvol0j1smy3u3",
@@ -1700,7 +1804,9 @@
       "kills": 1,
       "deaths": 0,
       "dead": false,
-      "statPoints": 0
+      "statPoints": 0,
+      "admin": false,
+      "god": false
     },
     {
       "id": "char_mvwe59w1axzqfn",
@@ -1746,7 +1852,9 @@
       "kills": 1,
       "deaths": 0,
       "dead": false,
-      "statPoints": 0
+      "statPoints": 0,
+      "admin": false,
+      "god": false
     },
     {
       "id": "char_mvzcem6mhyn7l2",
@@ -1800,7 +1908,57 @@
       "kills": 47,
       "deaths": 1,
       "dead": false,
-      "statPoints": 12
+      "statPoints": 12,
+      "admin": false,
+      "god": false
+    },
+    {
+      "id": "char_mvzpohb0z3cq3m",
+      "userId": "user_mvzpohb0npqne2",
+      "name": "Admin",
+      "class": "DarkKnight",
+      "level": 50,
+      "exp": 190,
+      "expNext": 42994,
+      "hp": 7080,
+      "maxHp": 7080,
+      "mp": 1200,
+      "maxMp": 1200,
+      "cp": 1545,
+      "maxCp": 1545,
+      "food": 55,
+      "maxFood": 100,
+      "gold": 1000000,
+      "gridX": 14,
+      "gridY": 16,
+      "baseStats": {
+        "str": 116,
+        "dex": 59,
+        "int": 54,
+        "vit": 114,
+        "wit": 57,
+        "men": 57
+      },
+      "inventory": [
+        {
+          "itemId": "item_3",
+          "count": 3
+        }
+      ],
+      "equipment": {
+        "weapon": "item_1",
+        "armor": null,
+        "helm": null,
+        "boots": null,
+        "ring": null
+      },
+      "quests": [],
+      "kills": 2,
+      "deaths": 0,
+      "dead": false,
+      "statPoints": 147,
+      "admin": true,
+      "god": true
     }
   ]
 }
