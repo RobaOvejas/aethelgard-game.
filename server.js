@@ -165,7 +165,7 @@ const ITEMS = {
   item_7: { id: 'item_7', name: 'Anillo Arcano', icon: '💍', type: 'ring', rarity: 'rare', value: 80, stats: { int: 6 } },
   item_8: { id: 'item_8', name: 'Cetro de Aeth', icon: '🔮', type: 'weapon', rarity: 'epic', value: 180, dmg: 66, stats: { int: 12 } },
   item_9: { id: 'item_9', name: 'Coraza de Kundun', icon: '🛡️', type: 'armor', rarity: 'legendary', value: 400, def: 42 },
-  item_10: { id: 'item_10', name: 'Colmillo de Goblin', icon: '🦴', type: 'material', rarity: 'common', value: 4 },
+  item_10: { id: 'item_10', name: 'Colmillo de Hueso', icon: '🦴', type: 'material', rarity: 'common', value: 4 },
   item_11: { id: 'item_11', name: 'Esencia Sombría', icon: '✨', type: 'material', rarity: 'rare', value: 25 },
   item_12: { id: 'item_12', name: 'Oro Antiguo', icon: '🪙', type: 'material', rarity: 'uncommon', value: 12 },
   item_13: { id: 'item_13', name: 'Poción de Maná', icon: '🔷', type: 'potion', rarity: 'common', value: 25, healMp: 180 },
@@ -739,7 +739,10 @@ function createCharacter(options) {
     lastAcceptedMoveAt: 0,
     lastRegenAt: 0,
     lastFoodAt: 0,
-    socketId: null
+    socketId: null,
+    // v2.4: cuenta de administracion (panel y comandos) y modo dios.
+    admin: opts.admin === true,
+    god: false
   };
   recomputeDerived(char);
   return char;
@@ -801,6 +804,8 @@ function normalizeCharacter(raw) {
   char.kills = Math.max(0, toInt(raw.kills, 0));
   char.deaths = Math.max(0, toInt(raw.deaths, 0));
   char.statPoints = Math.max(0, toInt(raw.statPoints, 0));
+  char.admin = raw.admin === true;
+  char.god = raw.god === true;
   char.online = false;
   char.dead = raw.dead === true; // B4: la muerte se persiste; al cargar no se resucita gratis.
   char.socketId = null;
@@ -853,7 +858,10 @@ function publicChar(char) {
     quests: publicQuests(char),
     kills: char.kills,
     deaths: char.deaths,
-    online: !!char.online
+    online: !!char.online,
+    // v2.4: el cliente muestra el panel de administracion solo si esta activo.
+    admin: !!char.admin,
+    god: !!char.god
   };
 }
 
@@ -1001,7 +1009,9 @@ function charForSave(char) {
     kills: char.kills,
     deaths: char.deaths,
     dead: !!char.dead, // B4: persistir la muerte para que el reinicio no regale la resurreccion.
-    statPoints: char.statPoints || 0
+    statPoints: char.statPoints || 0,
+    admin: !!char.admin,
+    god: !!char.god
   };
 }
 
@@ -1010,7 +1020,7 @@ function serializeState() {
     version: 2,
     savedAt: Date.now(),
     users: state.users.map(function (user) {
-      return { id: user.id, username: user.username, passwordHash: user.passwordHash, characterId: user.characterId, createdAt: user.createdAt };
+      return { id: user.id, username: user.username, passwordHash: user.passwordHash, characterId: user.characterId, createdAt: user.createdAt, admin: !!user.admin };
     }),
     characters: state.characters.map(charForSave)
   };
@@ -1045,14 +1055,54 @@ async function seedDemoAccounts() {
   ];
   for (const demo of demoAccounts) {
     const passwordHash = await bcrypt.hash(demo.password, 10);
-    addUserWithCharacter(demo.username, passwordHash, demo.className, true);
+    addUserWithCharacter(demo.username, passwordHash, demo.className, true, false);
   }
+  await ensureAdminAccount();
 }
 
-function addUserWithCharacter(username, passwordHash, className, withStarterKit) {
-  const user = { id: generateId('user'), username: username, passwordHash: passwordHash, characterId: null, createdAt: Date.now() };
-  const char = createCharacter({ userId: user.id, name: username, class: className });
+// v2.4: cuenta ADMIN persistente. Contrasena configurable por entorno.
+const ADMIN_USERNAME = 'Admin';
+const ADMIN_PASSWORD = process.env.AETHELGARD_ADMIN_PASSWORD || 'admin1234';
+
+async function ensureAdminAccount() {
+  const existing = state.users.find(function (user) { return user.username.toLowerCase() === ADMIN_USERNAME.toLowerCase(); });
+  if (existing) {
+    let changed = false;
+    if (!existing.admin) { existing.admin = true; changed = true; }
+    const linked = existing.characterId ? charById.get(existing.characterId) : null;
+    if (linked && !linked.admin) { linked.admin = true; changed = true; }
+    if (changed) scheduleSave();
+    return linked || null;
+  }
+  const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 10);
+  const created = addUserWithCharacter(ADMIN_USERNAME, passwordHash, 'DarkKnight', true, true);
+  // Kit inicial de administracion: oro y nivel altos para probar contenido rapido.
+  created.char.gold = 1000000;
+  created.char.level = 50;
+  created.char.exp = 0;
+  created.char.expNext = expForLevel(50);
+  const growth = CLASSES.DarkKnight.growth;
+  for (let i = 1; i < 50; i++) {
+    for (const key of STAT_KEYS) created.char.baseStats[key] = (created.char.baseStats[key] || 0) + (growth[key] || 0);
+    created.char.maxHp += growth.hp || 0;
+    created.char.maxMp += growth.mp || 0;
+    created.char.maxCp += growth.cp || 0;
+  }
+  created.char.statPoints = 49 * 3;
+  created.char.hp = created.char.maxHp;
+  created.char.mp = created.char.maxMp;
+  created.char.cp = created.char.maxCp;
+  recomputeDerived(created.char);
+  saveStateNow();
+  console.log('[admin] Cuenta ' + ADMIN_USERNAME + ' creada (contrasena: ' + ADMIN_PASSWORD + '). Cambiala con AETHELGARD_ADMIN_PASSWORD.');
+  return created.char;
+}
+
+function addUserWithCharacter(username, passwordHash, className, withStarterKit, isAdmin) {
+  const user = { id: generateId('user'), username: username, passwordHash: passwordHash, characterId: null, createdAt: Date.now(), admin: isAdmin === true };
+  const char = createCharacter({ userId: user.id, name: username, class: className, admin: isAdmin === true });
   if (withStarterKit) applyStarterKit(char);
+  if (isAdmin === true) char.admin = true;
   user.characterId = char.id;
   state.users.push(user);
   state.characters.push(char);
@@ -1087,7 +1137,8 @@ async function loadState() {
             username: user.username,
             passwordHash: user.passwordHash,
             characterId: typeof user.characterId === 'string' ? user.characterId : null,
-            createdAt: toInt(user.createdAt, Date.now())
+            createdAt: toInt(user.createdAt, Date.now()),
+            admin: user.admin === true
           };
         });
       const characters = raw.characters.map(normalizeCharacter).filter(Boolean);
@@ -1117,6 +1168,7 @@ async function loadState() {
   }
   charById.clear();
   for (const char of state.characters) charById.set(char.id, char);
+  await ensureAdminAccount();
   console.log('[state] Usuarios cargados: ' + state.users.length + ' | Personajes: ' + state.characters.length);
 }
 
@@ -1414,6 +1466,7 @@ function useBlinkSkill(char, socket, skill) {
 }
 
 function monsterAttack(monster, char) {
+  if (char.god) return; // modo dios: los esqueletos no pueden hacer dano al admin
   const crit = Math.random() < 0.08;
   let raw = monster.dmg * (0.9 + Math.random() * 0.2);
   if (crit) raw *= 1.5;
@@ -1965,7 +2018,7 @@ function handleChatCommand(socket, char, text) {
   const parts = text.slice(1).trim().split(/\s+/);
   const command = (parts[0] || '').toLowerCase();
   if (command === 'help') {
-    systemChat(socket, 'Comandos: /help, /online, /who, /stats.');
+    systemChat(socket, 'Comandos: /help, /online, /who, /stats.' + (char.admin ? ' Admin: /adminhelp.' : ''));
     return;
   }
   if (command === 'online' || command === 'who') {
@@ -1980,7 +2033,236 @@ function handleChatCommand(socket, char, text) {
     systemChat(socket, char.name + ' - ' + char.class + ' Nv.' + char.level + ' | HP ' + char.hp + '/' + char.maxHp + ' | MP ' + char.mp + '/' + char.maxMp + ' | CP ' + char.cp + '/' + char.maxCp + ' | Oro ' + char.gold + ' | EXP ' + char.exp + '/' + char.expNext + ' | Kills ' + char.kills + ' | Muertes ' + char.deaths);
     return;
   }
+  if (char.admin && handleAdminCommand(socket, char, command, parts, text)) return;
   systemChat(socket, 'Comando desconocido. Usa /help para ver la lista.');
+}
+
+// ---------------------------------------------------------------------------
+// Administracion (v2.4): cuenta ADMIN, panel y comandos. Solo servidor.
+// ---------------------------------------------------------------------------
+
+let adminMonsterSeq = 0;
+
+function isAdminChar(char) {
+  return !!(char && char.admin === true);
+}
+
+function adminResult(socket, ok, message) {
+  if (socket) toast(socket, ok ? 'success' : 'warn', message);
+  if (socket && socket.emit) socket.emit('adminResult', { ok: !!ok, message: message || '' });
+}
+
+function adminMonsterFromType(typeKey, x, y) {
+  const type = MONSTER_TYPES[typeKey];
+  if (!type) return null;
+  return {
+    id: 'monster_admin_' + (++adminMonsterSeq),
+    name: type.name,
+    type: type.type,
+    level: type.level,
+    elite: false,
+    gridX: x,
+    gridY: y,
+    spawnX: x,
+    spawnY: y,
+    hp: type.hp,
+    maxHp: type.hp,
+    dmg: type.dmg,
+    def: type.def,
+    aggroRange: type.aggro,
+    speedTicks: type.moveEveryTicks || type.speed,
+    stepsPerTurn: type.stepsPerTurn || 1,
+    attackRange: type.attackRange || 1,
+    exp: type.exp,
+    respawnMs: type.respawnMs,
+    diedAt: 0,
+    respawnAt: 0,
+    targetId: null,
+    lastAttackAt: 0,
+    lastStepAt: 0,
+    moving: false,
+    attackAnim: 0
+  };
+}
+
+function adminCharUpdate(char) {
+  recomputeDerived(char);
+  emitToChar(char, 'charUpdate', { char: publicChar(char) });
+  scheduleSave();
+}
+
+function adminSpawnMonster(char, socket, typeKey, x, y) {
+  const gx = clamp(toInt(x, char.gridX + 2), 0, MAP_SIZE - 1);
+  const gy = clamp(toInt(y, char.gridY + 2), 0, MAP_SIZE - 1);
+  const monster = adminMonsterFromType(typeKey, gx, gy);
+  if (!monster) { adminResult(socket, false, 'Tipo invalido. Usa: skeleton, skeleton_archer, skeleton_mage o skeleton_minion.'); return false; }
+  monsters.push(monster);
+  adminResult(socket, true, 'Invocado ' + monster.name + ' en (' + gx + ',' + gy + ').');
+  scheduleSave();
+  return true;
+}
+
+function adminRemoveMonster(socket, monsterId) {
+  const index = monsters.findIndex(function (m) { return m.id === monsterId; });
+  if (index === -1) { adminResult(socket, false, 'Monstruo no encontrado.'); return false; }
+  const removed = monsters.splice(index, 1)[0];
+  for (const player of connected.values()) if (player.targetId === removed.id) player.targetId = null;
+  adminResult(socket, true, 'Eliminado ' + removed.name + '.');
+  return true;
+}
+
+function adminClearMonsters(socket) {
+  const count = monsters.length;
+  monsters.length = 0;
+  for (const player of connected.values()) player.targetId = null;
+  adminResult(socket, true, 'Eliminados ' + count + ' esqueletos (no reaparecen hasta reiniciar el servidor).');
+  return true;
+}
+
+function adminKillAll(char, socket) {
+  let count = 0;
+  for (const monster of monsters.slice()) {
+    if (monster.hp > 0) { killMonster(monster, char); count += 1; }
+  }
+  adminResult(socket, true, 'Aniquilados ' + count + ' esqueletos (respawn normal).');
+  return true;
+}
+
+function adminTeleport(char, socket, x, y) {
+  const gx = clamp(toInt(x, char.gridX), 0, MAP_SIZE - 1);
+  const gy = clamp(toInt(y, char.gridY), 0, MAP_SIZE - 1);
+  char.gridX = gx;
+  char.gridY = gy;
+  char.path = [];
+  char.moving = false;
+  char.targetId = null;
+  adminCharUpdate(char);
+  emitToChar(char, 'teleportFx', { gridX: gx, gridY: gy });
+  adminResult(socket, true, 'Teletransportado a (' + gx + ',' + gy + ').');
+  return true;
+}
+
+function adminGiveItem(char, socket, itemId, count) {
+  const item = getItem(itemId);
+  if (!item) { adminResult(socket, false, 'Objeto invalido.'); return false; }
+  const amount = clamp(toInt(count, 1), 1, MAX_STACK);
+  const added = addItems(char, itemId, amount);
+  if (!added) { adminResult(socket, false, 'Inventario lleno.'); return false; }
+  adminCharUpdate(char);
+  adminResult(socket, true, 'Recibido ' + item.name + ' x' + added + '.');
+  return true;
+}
+
+function adminGiveGold(char, socket, amount) {
+  const value = clamp(toInt(amount, 1000), 1, 1000000000);
+  char.gold += value;
+  adminCharUpdate(char);
+  adminResult(socket, true, 'Oro: +' + value + ' (total ' + char.gold + ').');
+  return true;
+}
+
+function adminSetLevel(char, socket, level) {
+  const target = clamp(toInt(level, char.level), 1, 100);
+  const classDef = getClassDef(char.class) || CLASSES.DarkKnight;
+  const growth = classDef.growth;
+  for (const key of STAT_KEYS) char.baseStats[key] = classDef.stats[key];
+  char.maxHp = classDef.hp;
+  char.maxMp = classDef.mp;
+  char.maxCp = classDef.cp;
+  for (let i = 1; i < target; i++) {
+    for (const key of STAT_KEYS) char.baseStats[key] = (char.baseStats[key] || 0) + (growth[key] || 0);
+    char.maxHp += growth.hp || 0;
+    char.maxMp += growth.mp || 0;
+    char.maxCp += growth.cp || 0;
+  }
+  char.level = target;
+  char.exp = 0;
+  char.expNext = expForLevel(target);
+  char.statPoints = (target - 1) * 3;
+  char.hp = char.maxHp;
+  char.mp = char.maxMp;
+  char.cp = char.maxCp;
+  char.dead = false;
+  adminCharUpdate(char);
+  adminResult(socket, true, 'Nivel fijado a ' + target + '.');
+  return true;
+}
+
+function adminSetStat(char, socket, statKey, value) {
+  const key = String(statKey || '').toLowerCase();
+  if (STAT_KEYS.indexOf(key) === -1) { adminResult(socket, false, 'Atributo invalido.'); return false; }
+  char.baseStats[key] = clamp(toInt(value, char.baseStats[key]), 0, 9999);
+  adminCharUpdate(char);
+  adminResult(socket, true, 'Atributo ' + key + ' = ' + char.baseStats[key] + '.');
+  return true;
+}
+
+function adminHeal(char, socket) {
+  char.dead = false;
+  char.hp = char.maxHp;
+  char.mp = char.maxMp;
+  char.cp = char.maxCp;
+  char.food = char.maxFood;
+  adminCharUpdate(char);
+  adminResult(socket, true, 'Vida, mana, CP y comida restaurados.');
+  return true;
+}
+
+function adminGod(char, socket, on) {
+  char.god = on === undefined ? !char.god : !!on;
+  adminCharUpdate(char);
+  adminResult(socket, true, 'Modo dios ' + (char.god ? 'ACTIVADO' : 'desactivado') + '.');
+  return true;
+}
+
+function adminClearDrops(socket) {
+  const count = drops.length;
+  drops.length = 0;
+  adminResult(socket, true, 'Eliminados ' + count + ' objetos del suelo.');
+  return true;
+}
+
+function adminSpawnDrop(char, socket, itemId, x, y) {
+  const item = getItem(itemId);
+  if (!item) { adminResult(socket, false, 'Objeto invalido.'); return false; }
+  const gx = clamp(toInt(x, char.gridX), 0, MAP_SIZE - 1);
+  const gy = clamp(toInt(y, char.gridY), 0, MAP_SIZE - 1);
+  drops.push({ id: 'drop_' + (++dropSeq), itemId: itemId, gridX: gx, gridY: gy, gold: 0, expiresAt: Date.now() + DROP_TTL_MS });
+  adminResult(socket, true, 'Creado drop de ' + item.name + ' en (' + gx + ',' + gy + ').');
+  return true;
+}
+
+function adminMonstersPayload() {
+  return monsters.map(function (m) {
+    return { id: m.id, type: m.type, name: m.name, level: m.level, hp: m.hp, maxHp: m.maxHp, gridX: m.gridX, gridY: m.gridY, alive: m.hp > 0 };
+  });
+}
+
+function handleAdminCommand(socket, char, command, parts, text) {
+  try {
+    const arg = function (i, fallback) { return parts[i] !== undefined ? parts[i] : fallback; };
+    switch (command) {
+      case 'adminhelp':
+        systemChat(socket, 'Admin: /spawn <tipo> [x y] · /tp <x> <y> · /give <itemId> [n] · /gold <n> · /level <n> · /stat <str|dex|int|vit|wit|men> <n> · /heal · /god [on|off] · /killall · /clear · /drop <itemId> [x y] · /monsters');
+        return true;
+      case 'spawn': adminSpawnMonster(char, socket, arg(1, ''), arg(2), arg(3)); return true;
+      case 'tp': adminTeleport(char, socket, arg(1), arg(2)); return true;
+      case 'give': adminGiveItem(char, socket, arg(1, ''), arg(2)); return true;
+      case 'gold': adminGiveGold(char, socket, arg(1)); return true;
+      case 'level': adminSetLevel(char, socket, arg(1)); return true;
+      case 'stat': adminSetStat(char, socket, arg(1), arg(2)); return true;
+      case 'heal': adminHeal(char, socket); return true;
+      case 'god': adminGod(char, socket, arg(1) === undefined ? undefined : (arg(1) === 'on' || arg(1) === '1' || arg(1) === 'true')); return true;
+      case 'killall': adminKillAll(char, socket); return true;
+      case 'clear': adminClearMonsters(socket); return true;
+      case 'drop': adminSpawnDrop(char, socket, arg(1, ''), arg(2), arg(3)); return true;
+      case 'monsters': systemChat(socket, 'Esqueletos (' + monsters.length + '): ' + monsters.map(function (m) { return m.type + ' ' + m.hp + '/' + m.maxHp + ' @' + m.gridX + ',' + m.gridY; }).join(' | ')); return true;
+      default: return false;
+    }
+  } catch (err) {
+    adminResult(socket, false, 'Error admin: ' + (err && err.message ? err.message : 'error'));
+    return true;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -2853,6 +3135,76 @@ io.on('connection', function (socket) {
     emitToChar(char, 'charUpdate', { char: publicChar(char) });
     toast(socket, 'success', 'Has resucitado en el santuario de tu clase. Has perdido ' + lost + ' de experiencia.');
     scheduleSave();
+  });
+
+  /* ---- v2.4: eventos del panel de administracion (solo cuentas ADMIN) ---- */
+  const adminRequire = function () {
+    const c = getSocketCharacter(socket);
+    if (!isAdminChar(c)) { adminResult(socket, false, 'Solo cuentas ADMIN pueden usar esto.'); return null; }
+    return c;
+  };
+  const adminRespond = function (ack, ok) { if (typeof ack === 'function') { try { ack({ ok: !!ok }); } catch (e) {} } };
+  registerSocketHandler(socket, 'adminSpawn', function (payload, ack) {
+    const char = adminRequire(); if (!char) { adminRespond(ack, false); return; }
+    const p = payload || {};
+    adminRespond(ack, adminSpawnMonster(char, socket, p.type, p.gridX, p.gridY));
+  });
+  registerSocketHandler(socket, 'adminRemove', function (payload, ack) {
+    if (!adminRequire()) { adminRespond(ack, false); return; }
+    adminRespond(ack, adminRemoveMonster(socket, payload && payload.id));
+  });
+  registerSocketHandler(socket, 'adminKillAll', function (payload, ack) {
+    const char = adminRequire(); if (!char) { adminRespond(ack, false); return; }
+    adminRespond(ack, adminKillAll(char, socket));
+  });
+  registerSocketHandler(socket, 'adminClearMonsters', function (payload, ack) {
+    if (!adminRequire()) { adminRespond(ack, false); return; }
+    adminRespond(ack, adminClearMonsters(socket));
+  });
+  registerSocketHandler(socket, 'adminTeleport', function (payload, ack) {
+    const char = adminRequire(); if (!char) { adminRespond(ack, false); return; }
+    const p = payload || {};
+    adminRespond(ack, adminTeleport(char, socket, p.gridX, p.gridY));
+  });
+  registerSocketHandler(socket, 'adminGiveItem', function (payload, ack) {
+    const char = adminRequire(); if (!char) { adminRespond(ack, false); return; }
+    const p = payload || {};
+    adminRespond(ack, adminGiveItem(char, socket, p.itemId, p.count));
+  });
+  registerSocketHandler(socket, 'adminGiveGold', function (payload, ack) {
+    const char = adminRequire(); if (!char) { adminRespond(ack, false); return; }
+    adminRespond(ack, adminGiveGold(char, socket, payload && payload.amount));
+  });
+  registerSocketHandler(socket, 'adminSetLevel', function (payload, ack) {
+    const char = adminRequire(); if (!char) { adminRespond(ack, false); return; }
+    adminRespond(ack, adminSetLevel(char, socket, payload && payload.level));
+  });
+  registerSocketHandler(socket, 'adminSetStat', function (payload, ack) {
+    const char = adminRequire(); if (!char) { adminRespond(ack, false); return; }
+    const p = payload || {};
+    adminRespond(ack, adminSetStat(char, socket, p.stat, p.value));
+  });
+  registerSocketHandler(socket, 'adminHeal', function (payload, ack) {
+    const char = adminRequire(); if (!char) { adminRespond(ack, false); return; }
+    adminRespond(ack, adminHeal(char, socket));
+  });
+  registerSocketHandler(socket, 'adminGod', function (payload, ack) {
+    const char = adminRequire(); if (!char) { adminRespond(ack, false); return; }
+    adminRespond(ack, adminGod(char, socket, payload && payload.on));
+  });
+  registerSocketHandler(socket, 'adminClearDrops', function (payload, ack) {
+    if (!adminRequire()) { adminRespond(ack, false); return; }
+    adminRespond(ack, adminClearDrops(socket));
+  });
+  registerSocketHandler(socket, 'adminSpawnDrop', function (payload, ack) {
+    const char = adminRequire(); if (!char) { adminRespond(ack, false); return; }
+    const p = payload || {};
+    adminRespond(ack, adminSpawnDrop(char, socket, p.itemId, p.gridX, p.gridY));
+  });
+  registerSocketHandler(socket, 'adminList', function (payload, ack) {
+    if (!adminRequire()) { adminRespond(ack, false); return; }
+    socket.emit('adminMonsters', { monsters: adminMonstersPayload() });
+    adminRespond(ack, true);
   });
 
   registerSocketHandler(socket, 'ping', function (payload, callback) {

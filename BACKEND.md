@@ -28,7 +28,7 @@ Servidor -> cliente: `world` y `updateWorld` cada 150 ms (solo room `world-room`
 ## Decisiones
 - Datos en memoria; la capa de persistencia vive en `server.js` (los modulos heredados `models/` y `logic/combat.js` no forman parte del paquete v2). El personaje se extiende dentro de `server.js` con `expNext`, `gold`, `inventory`, `equipment`, `quests`, `dmg` y `def` (campos aditivos sobre PROTOCOL).
 - Colisiones con `logic/grid.js` y `world.json` (paredes y spawns de clase). `moveTo` resuelve BFS en servidor y avanza 1 celda por tick.
-- IA: aggro por radio, persecucion, leash de 14 celdas, ataque cada 1.2 s y respawn goblin 8 s / skeleton 15 s / boss 45 s / wolf 10 s / ogre 20 s / specter 14 s / champion 30 s; drops en el suelo con caducidad de 60 s. El respawn espera a que la celda este libre.
+- IA: aggro por radio, persecucion, leash de 14 celdas, ataque cada 1.2 s y respawn por tipo de esqueleto (skeleton 15 s / archer 12 s / mage 13 s / minion 10 s); drops en el suelo con caducidad de 60 s. El respawn espera a que la celda este libre. El mundo solo contiene esqueletos (20 spawns); se retiraron goblin, lobo, espectro, ogro, campeon y jefe.
 - XP `expNext = round(100 * level^1.55)`; `levelUp` restaura HP/MP/CP, sube stats y otorga +3 puntos de atributo. Muerte: `death` + `dead:true`, se persiste `dead` para que un reinicio no regale la resurreccion; `respawn` al spawn de clase con -10% de XP y `deaths++`.
 - Chat saneado (sin `<`/`>`, sin saltos de linea, maximo 200) y comandos `/help`, `/online`, `/who`, `/stats`. Los canales se difunden a todos (sin salas separadas).
 - `skill` cubre dano, curacion (`potion`), buffs (`holyShield`, `sprint`) y blink (`teleport`, vuelve al spawn de clase). `attack` solo acepta skills de tipo damage. Las skills `aoe` (whirlwind, meteor) aplican dano radial en el servidor. Los buffs se anuncian con el evento `buff` y el blink con `teleportFx`.
@@ -39,7 +39,7 @@ Servidor -> cliente: `world` y `updateWorld` cada 150 ms (solo room `world-room`
 - `charUpdate` incluye `dmg` y `def`; `world.players` y `updateWorld` respetan la forma compacta del protocolo. `player` incluye `weapon` (item equipado) para que el resto de clientes dibuje el arma visible.
 
 ## v2.1
-- 7 tipos de monstruo y 16 spawns; `wolf` da 2 pasos por turno de IA, `specter` ataca a 4 celdas, `champion` es elite; `world.monsters[].elite`.
+- 4 tipos de esqueleto y 20 spawns; arquero ataca a 2 celdas, mago a 3; sin élites en el mundo actual.
 - `statPoints` (+3 por nivel) con `allocStat`; mercader `shop`/`shopStock`/`buy`/`sell` (venta `max(1, floor(value*0.6))`); `item_13`/`item_14`; 6 quests (q6 collect derivado del inventario).
 
 ## v2.3
@@ -51,4 +51,12 @@ Servidor -> cliente: `world` y `updateWorld` cada 150 ms (solo room `world-room`
 - **CORS**: por defecto solo se aceptan origenes `localhost`/`127.0.0.1`/`::1` en el puerto del servidor. Para exponerlo en red se define `AETHELGARD_ORIGINS` (lista separada por comas) con los origenes permitidos.
 - **Nombres reservados**: no se pueden registrar `sistema`, `system`, `admin`, `administrador`, `gm`, `moderador`, `staff`, `soporte`, `servidor`, `server` ni `aethelgard` (evita suplantacion en el chat).
 - **Persistencia de combate**: los pasos de movimiento, el path, los casteos, el dano recibido y la regeneracion marcan `dirty`, por lo que el autosave de 30 s guarda posicion, HP/MP y cooldowns aunque no haya otra accion.
+- **Mundo de esqueletos**: `MONSTER_TYPES`/`MONSTER_SPAWNS`/`DROP_TABLES` solo contienen `skeleton`, `skeleton_archer`, `skeleton_mage` y `skeleton_minion` (20 spawns). Se retiraron `goblin`, `wolf`, `specter`, `ogre`, `champion` y `boss`; las quests q1/q3/q4/q5 se reescribieron para esos esqueletos y `item_10` pasa a llamarse «Colmillo de Hueso».
+
+## v2.4 (admin)
+- **Cuenta ADMIN**: `ensureAdminAccount()` garantiza el usuario `Admin` al arrancar (tambien sobre un `state.json` existente). Contrasena inicial `admin1234` o `AETHELGARD_ADMIN_PASSWORD`; el flag se guarda en `user.admin` y `char.admin` y se normaliza al cargar.
+- **Eventos admin** (solo si `char.admin`): `adminSpawn`, `adminRemove`, `adminKillAll`, `adminClearMonsters`, `adminTeleport`, `adminGiveItem`, `adminGiveGold`, `adminSetLevel`, `adminSetStat`, `adminHeal`, `adminGod`, `adminClearDrops`, `adminSpawnDrop`, `adminList`. Responden con ack `{ok}` y emiten `adminResult {ok,message}`; `adminList` emite `adminMonsters {monsters:[...]}`.
+- **Modo dios**: `monsterAttack()` no aplica dano si `char.god`; `char.god` se persiste.
+- **Comandos de chat** solo ADMIN: `/adminhelp`, `/spawn`, `/tp`, `/give`, `/gold`, `/level`, `/stat`, `/heal`, `/god`, `/killall`, `/clear`, `/drop`, `/monsters`.
+- **Cliente**: ventana `Windows.admin` (boton y atajo `G` solo si `S.me.admin`), `Game.adminAction/adminRequestList/adminState`, eventos `adminResult`/`adminMonsters` y diagnostico `Aethelgard.adminState()`.
 

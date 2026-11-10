@@ -10,6 +10,16 @@ el punto de acuerdo. **Léelo antes de editar** y actualiza la sección «Regist
 - `node --check server.js` y `node verify.js`: sin fallos.
 - Servidor parado; `data/server.lock` eliminado.
 
+## ⚠️ Incidentes de coordinación
+
+- `2026-11-02 15:22 · OpenCode` **reemplazó `README.md` por un stub de 36 bytes** y ejecutó `git init`
+  (sin commits). No había respaldo; DSH reconstruyó el README completo a las 16:35 y subió la versión
+  a **2.4.0**. Evitar sobrescribir docs sin aviso; si se reescribe un archivo, dejar el original.
+- `git status` muestra cientos de archivos en stage (incluidos assets y `Sonidos/`). No hay commit
+  inicial: no usar `git checkout`/`git restore` hasta que exista un commit acordado.
+- **Cambios DSH en curso**: sistema ADMIN en `server.js` + `public/index.html` (v2.4). OpenCode no debe
+  sobrescribir esos archivos sin leer este documento.
+
 ## Reglas de oro
 
 1. **Un servidor por `DATA_DIR`.** El lock `data/server.lock` aborta la segunda instancia. Si aparece
@@ -119,3 +129,9 @@ Formato: `AAAA-MM-DD HH:mm · agente · archivo(s) · qué`.
 - `2026-11-02 10:53 · OpenCode · index.html · sigue editando UAL (mtime 10:53); DSH espera para E2E definitivo`.
 - `2026-11-02 11:05 · DSH · assets/monsters + index.html · integración de esqueletos KayKit (4 GLB con textura embebida, mapeo por tipo, animaciones y fallback); faltaba en el pack de OpenCode`.
 - `2026-11-02 11:2x · DSH · PROTOCOL.md · documentados skeleton_archer/mage/minion, spawns y mapeo visual a modelos`.
+- `2026-11-02 12:20 · DSH · server.js + index.html + PROTOCOL/README/BACKEND/ROADMAP · mundo solo de esqueletos: retirados goblin, lobo, espectro, campeón, ogro y jefe; 20 spawns y drops redistribuidos; quests q1/q3/q4/q5 reescritas; item_10 «Colmillo de Hueso»`.
+- `2026-11-02 12:57 · DSH · e2e.js · CDP timeout 60 s → 360 s (el retarget de UAL bloquea el hilo en headless) y paso «monstruos solo esqueletos» (antes buscaba tipos retirados)`.
+- `2026-11-02 15:0x · DSH · verificación · socket: 20 spawns, 4 tipos de esqueleto, 0 élites, quests q1–q5 con targets esqueleto; E2E 29/30 OK + único WARN era el paso antiguo, ya corregido`.
+- `2026-11-02 15:2x–16:3x · DSH · server.js + index.html + e2e.js + docs · v2.4 ADMIN: cuenta Admin (1M oro, Nv 50), flag persistente, 14 eventos admin validados por servidor, comandos, panel con spawn/eliminar/teleport/items/oro/nivel/atributos/god/lista y botón solo para admin; versión 2.4.0`.
+- `2026-11-02 15:22 · OpenCode · README.md (reemplazado por stub) + git init + LICENSE/.gitattributes · incidente registrado arriba`.
+- `2026-11-02 16:35 · DSH · README.md reconstruido completo (incluye cuenta ADMIN) + PROTOCOL v2.4 (eventos/comandos) + BACKEND/ROADMAP actualizados`.

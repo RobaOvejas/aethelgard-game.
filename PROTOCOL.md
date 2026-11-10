@@ -46,7 +46,7 @@ El cliente acopla el arma al hueso `handslot.r` y muestra/oculta el yelmo del Kn
 
 ### `monster`
 ```js
-{ id, name, type: 'goblin'|'skeleton'|'skeleton_archer'|'skeleton_mage'|'skeleton_minion'|'boss',
+{ id, name, type: 'skeleton'|'skeleton_archer'|'skeleton_mage'|'skeleton_minion',
   level, gridX, gridY, hp, maxHp, moving, attackAnim, targetId|null }
 ```
 
@@ -169,7 +169,7 @@ item_6  Botas del Viento    boots  rare     def 9  value 60   icon 👢  stats {
 item_7  Anillo Arcano       ring   rare     value 80          icon 💍  stats {int:6}
 item_8  Cetro de Aeth       weapon epic     dmg 66 value 180  icon 🔮  stats {int:12}
 item_9  Coraza de Kundun    armor  legendary def 42 value 400 icon 🛡️
-item_10 Colmillo de Goblin  material common  value 4          icon 🦴
+item_10 Colmillo de Hueso    material common  value 4          icon 🦴
 item_11 Esencia Sombría     material rare    value 25         icon ✨
 item_12 Oro Antiguo         material uncommon value 12        icon 🪙
 item_13 Poción de Maná      potion common  healMp 180 value 25 icon 🔷
@@ -186,9 +186,9 @@ de vida y 50 de oro. Los personajes ya creados conservan su equipo.
 ## 7. Quest 3 canónicas
 
 ```
-q1  El Despertar        goal kill goblin x3      reward exp 300  gold 120
-q2  Huesos del Abismo   goal kill skeleton x2    reward exp 650  gold 250 item_5
-q3  La Sombra de Kundun goal kill boss x1        reward exp 2500 gold 1200 item_9
+q1  El Despertar        goal kill skeleton_minion x3 reward exp 300  gold 120
+q2  Huesos del Abismo   goal kill skeleton x2        reward exp 650  gold 250 item_5
+q3  El Ritual del Abismo goal kill skeleton_mage x3  reward exp 2500 gold 1200 item_9
 ```
 
 ## 8. Reglas de servidor
@@ -198,8 +198,8 @@ q3  La Sombra de Kundun goal kill boss x1        reward exp 2500 gold 1200 item_
   si hay un `path` activo. `moveTo` resuelve BFS, limitado a 200 celdas y con cancelación del path
   anterior ante cualquier destino inválido.
 - IA: aggro por radio, persecución con paso de 1 celda cada `speed` ticks, leash a 14 celdas del spawn,
-  ataque con cooldown 1.2 s, respawn (goblin 8 s, skeleton 15 s, boss 45 s, wolf 10 s, ogre 20 s,
-  specter 14 s, champion 30 s). Un monstruo no reaparece sobre una celda ocupada.
+  ataque con cooldown 1.2 s, respawn por tipo (skeleton 15 s, archer 12 s, mage 13 s, minion 10 s).
+  Un monstruo no reaparece sobre una celda ocupada.
 - Nada de confianza en el cliente: validar rango, cooldown, MP, muerte, pertenencia y ritmo.
 - Persistencia: `data/state.json` (usuarios con hash bcrypt, personajes, quests, muertes). Escritura
   debounced (1 s) + autosave cada 30 s + al `SIGINT`/`SIGTERM`. Movimiento, path, casteos, daño
@@ -234,46 +234,37 @@ los rangos para spawns y no bloquear movimiento fuera de ellos (dentro de 0…19
 | id | Nombre | Rango de celdas | Bioma |
 |---|---|---|---|
 | `sanctuary` | Santuario de la Aurora | x 0-8, y 0-8 | pradera inicial, NPC Anciano Sabio en (10,10) |
-| `plains` | Llanuras de Aethel | x 0-16, y 0-18 (resto) | pradera, goblins |
-| `forest` | Bosque Sombrío | x 16-30, y 0-18 | bosque denso, lobos y espectros |
-| `abyss` | Ruinas del Abismo | x 16-32, y 18-32 | roca, lava, ogros y Lord Kundun |
+| `plains` | Llanuras de Aethel | x 0-16, y 0-18 (resto) | pradera, minions esqueletos |
+| `forest` | Bosque Sombrío | x 16-30, y 0-18 | bosque denso, arqueros y magos esqueletos |
+| `abyss` | Ruinas del Abismo | x 16-32, y 18-32 | roca y lava, esqueletos de élite |
 
-## Z2. Nuevos tipos de monstruo (difusión `world.monsters[].type`)
+## Z2. Tipos de monstruo (solo esqueletos)
 
 | type | Nombre | Nv | HP | Daño | Aggro | Exp | Oro | Respawn | Notas |
 |---|---|---|---|---|---|---|---|---|---|
-| `wolf` | Lobo Sombrío | 3 | 130 | 14 | 7 | 90 | 22 | 10 s | velocidad 2 |
-| `ogre` | Ogro de las Ruinas | 6 | 340 | 30 | 6 | 260 | 70 | 20 s | velocidad 1, golpe fuerte |
-| `specter` | Espectro | 5 | 150 | 18 | 9 | 190 | 45 | 14 s | ataca a 4 celdas (rango) |
-| `champion` | Campeón (élite) | 8 | 520 | 34 | 8 | 480 | 160 | 30 s | aura, botín garantizado |
+| `skeleton` | Guerrero Esqueleto | 2 | 220 | 20 | 7 | 110 | 34 | 15 s | modelo `Skeleton_Warrior` |
 | `skeleton_archer` | Arquero Esqueleto | 3 | 180 | 15 | 6 | 100 | 42 | 12 s | rango 2, modelo `Skeleton_Rogue` |
 | `skeleton_mage` | Mago Esqueleto | 4 | 160 | 22 | 9 | 120 | 48 | 13 s | rango 3, modelo `Skeleton_Mage` |
 | `skeleton_minion` | Minion Esqueleto | 2 | 100 | 12 | 5 | 80 | 22 | 10 s | modelo `Skeleton_Minion` |
 
-Además, cualquier monstruo puede salir marcado como élite con el campo booleano `elite: true`
-(HP ×1.8, daño ×1.25, exp ×2, oro ×2, nombre con prefijo «Campeón»). El cliente dibuja aura dorada
-si `elite` es `true`.
+El mundo actual **solo tiene esqueletos** (se retiraron goblin, lobo, espectro, campeón, ogro y Lord
+Kundun). El campo opcional `elite: boolean` sigue soportado por el cliente, pero ningún spawn lo usa.
 
-`world.monsters[]` gana el campo opcional `elite: boolean`.
+`world.monsters[]` gana el campo opcional `elite: boolean` (reservado).
 
 Los tipos `skeleton*` se dibujan en el cliente con los GLB de `public/assets/monsters/` (pack **KayKit
 Skeletons**, CC0, textura PNG embebida en el GLB). Comparten el rig de 23 huesos de los personajes, así
 que reutilizan sus clips (`Idle_A`, `Walking_A`, `Use_Item`, `Death_A`); si el pack no está disponible,
 el cliente mantiene el modelo procedural de respaldo.
 
-## Z3. Spawns v2.1 (mínimo 12 monstruos activos)
+## Z3. Spawns actuales (solo esqueletos, 20 activos)
 
 ```
-goblin   (6,6) (10,13) (4,16) (12,4)          -> zona plains
-wolf     (18,6) (22,11) (26,4) (20,16)        -> zona forest
-specter  (24,8) (28,14)                       -> zona forest
-ogre     (20,22) (26,27)                      -> zona abyss
-champion (24,20)                              -> zona abyss (élite)
-skeleton (18,15) (21,17)                      -> ruinas
-skeleton_archer (22,8) (26,12)                -> ruinas
-skeleton_mage   (24,10)                       -> ruinas
-skeleton_minion (19,18) (27,22)               -> ruinas
-boss     (28,30)                              -> zona abyss (Lord Kundun)
+skeleton_minion (6,6) (10,13) (4,16) (12,4)    -> zona plains/santuario
+skeleton_archer (18,6) (22,11) (26,4) (20,16)  -> zona forest
+skeleton_mage   (24,10) (28,14) (24,20) (28,30)-> zona forest/abyss
+skeleton        (18,15) (21,17) (20,22) (26,27)-> ruinas
+skeleton_minion (19,18) (27,22) (24,8) (26,12) -> ruinas
 ```
 
 ## Z4. Puntos de atributo
@@ -295,7 +286,7 @@ boss     (28,30)                              -> zona abyss (Lord Kundun)
 - Catálogo de la tienda (precio fijo de compra):
   `item_3` Poción de Vida 40 · `item_13` Poción de Maná 45 · `item_14` Elixir de Aeth 120 ·
   `item_1` Espada Normal 90 · `item_2` Armadura Normal 110 · `item_4` Hacha de Guerra 260 ·
-  `item_5` Yelmo de Acero 240 · `item_6` Botas del Viento 340 · `item_10` Colmillo de Goblin 12.
+  `item_5` Yelmo de Acero 240 · `item_6` Botas del Viento 340 · `item_10` Colmillo de Hueso 12.
 - Objetos nuevos (añadir al catálogo de `ITEMS` en `config.items`):
   ```
   item_13 Poción de Maná  potion  common  healMp 180  value 25  icon 🔷
@@ -306,9 +297,9 @@ boss     (28,30)                              -> zona abyss (Lord Kundun)
 ## Z6. Misiones nuevas (total 6)
 
 ```
-q4  Colmillos del Bosque   goal kill wolf x4        reward exp 900  gold 300 item_6
-q5  El Ogro Devorador      goal kill ogre x2        reward exp 1800 gold 600 item_7
-q6  Ecos del Abismo        goal collect item_11 x3  reward exp 1200 gold 400 item_8
+q4  Flechas del Bosque     goal kill skeleton_archer x4 reward exp 900  gold 300 item_6
+q5  La Horda de Huesos     goal kill skeleton_minion x6 reward exp 1800 gold 600 item_7
+q6  Ecos del Abismo        goal collect item_11 x3      reward exp 1200 gold 400 item_8
 ```
 
 `q6` es de tipo `collect`: el progreso se calcula contando `inventory[item_11].count` (y también al
@@ -380,5 +371,47 @@ Cada arma clona su material (las instancias no comparten el tinte). Las armas co
 - Invitación recibida (`partyInvite`): mostrar Aceptar (`partyAccept`) / Rechazar (`partyDecline`).
 - En grupo: miembros con nivel y vida, botón **Salir** (`partyLeave`) y chat de grupo usando el canal
   `party` existente. `partyUpdate` refresca la ventana; `partyId:null` indica que ya no hay grupo.
+
+---
+
+# APÉNDICE v2.4 — Administración (cuenta ADMIN)
+
+## A8. Cuenta ADMIN
+- El servidor garantiza una cuenta `Admin` al arrancar (`ensureAdminAccount`). Contraseña inicial
+  `admin1234`, configurable con `AETHELGARD_ADMIN_PASSWORD`.
+- `char` gana `admin: boolean` y `god: boolean` (solo lectura para el cliente). El cliente muestra el
+  botón **Admin** y la tecla `G` solo si `char.admin === true`.
+- El servidor valida `char.admin` en todos los eventos `admin*`; un jugador normal recibe ack
+  `{ok:false}` y un `toast` de aviso.
+
+## A9. Eventos admin (C→S) y respuestas
+Todos aceptan un ack `{ok: boolean}` y emiten `adminResult {ok, message}` al emisor.
+
+| Evento | Payload | Efecto |
+|---|---|---|
+| `adminSpawn` | `{type, gridX, gridY}` | crea un esqueleto (tipo del catálogo) |
+| `adminRemove` | `{id}` | elimina un esqueleto por id |
+| `adminKillAll` | `{}` | mata todos (drops + respawn normal) |
+| `adminClearMonsters` | `{}` | vacía la lista de esqueletos |
+| `adminTeleport` | `{gridX, gridY}` | teletransporta al admin |
+| `adminGiveItem` | `{itemId, count}` | añade objetos (apilables o copias) |
+| `adminGiveGold` | `{amount}` | añade oro |
+| `adminSetLevel` | `{level 1–100}` | fija nivel y recalcula atributos/vitales |
+| `adminSetStat` | `{stat, value}` | fija un atributo base |
+| `adminHeal` | `{}` | restaura HP/MP/CP/comida y resucita |
+| `adminGod` | `{on}` | activa/desactiva inmunidad total |
+| `adminClearDrops` | `{}` | elimina todos los drops del suelo |
+| `adminSpawnDrop` | `{itemId, gridX, gridY}` | crea un drop en el suelo |
+| `adminList` | `{}` | responde con evento `adminMonsters {monsters:[{id,type,name,level,hp,maxHp,gridX,gridY,alive}]}` |
+
+## A10. Comandos de chat (solo ADMIN)
+`/adminhelp`, `/spawn <tipo> [x y]`, `/tp <x> <y>`, `/give <itemId> [n]`, `/gold <n>`, `/level <n>`,
+`/stat <str|dex|int|vit|wit|men> <n>`, `/heal`, `/god [on|off]`, `/killall`, `/clear`,
+`/drop <itemId> [x y]`, `/monsters`.
+
+## A11. Cliente
+- Ventana `Admin` (`Windows.admin`, atajo `G`): nivel, oro, spawn, teleport, objetos, atributos, lista
+  de esqueletos con botón Eliminar, modo dios, curar, matar/limpiar y atajos de comandos.
+- `Aethelgard.adminState()` → `{admin, god, monsters}`.
 
 

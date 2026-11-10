@@ -1,6 +1,6 @@
 {
   "name": "aethelgard-legacy-of-shadows",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "description": "MMORPG de mundo abierto estilo Tibia/Mu en HTML5 + Node.js (sin DB externa)",
   "main": "server.js",
   "scripts": {

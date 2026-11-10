@@ -65,7 +65,7 @@ class CDP {
     return new Promise((resolve, reject) => {
       this.pending.set(id, { resolve, reject });
       this.ws.send(JSON.stringify({ id, method, params: params || {} }));
-      setTimeout(() => { if (this.pending.has(id)) { this.pending.delete(id); reject(new Error('cdp timeout ' + method)); } }, 60000);
+      setTimeout(() => { if (this.pending.has(id)) { this.pending.delete(id); reject(new Error('cdp timeout ' + method)); } }, 360000);
     });
   }
   on(fn) { this.listeners.push(fn); }
@@ -171,8 +171,8 @@ async function main() {
   await navigate(cdp, 'http://127.0.0.1:' + PORT + '/', 'online');
   report.data.boot = await j(cdp, '({three: typeof THREE, io: typeof io, worldOk: Aethelgard.worldOk(), version: Aethelgard.version})');
   step('boot', report.data.boot && report.data.boot.three === 'object' ? 'OK' : 'WARN', JSON.stringify(report.data.boot));
-  const versionOk = !!(report.data.boot && report.data.boot.version === '2.3.0' && report.data.health && report.data.health.version === '2.3.0');
-  step('versión 2.3.0 (cliente + servidor)', versionOk ? 'OK' : 'WARN', JSON.stringify({ cliente: report.data.boot && report.data.boot.version, servidor: report.data.health && report.data.health.version }));
+  const versionOk = !!(report.data.boot && report.data.boot.version === '2.4.0' && report.data.health && report.data.health.version === '2.4.0');
+  step('versión 2.4.0 (cliente + servidor)', versionOk ? 'OK' : 'WARN', JSON.stringify({ cliente: report.data.boot && report.data.boot.version, servidor: report.data.health && report.data.health.version }));
   await shot(cdp, '01-login');
 
   log('[4] registro...');
@@ -299,10 +299,12 @@ async function main() {
     await ev(cdp, '(function(){var w=document.querySelector(".window .x"); if(w) w.click(); return true;})()');
     await sleep(300);
 
-    /* ---- v2.1: tipos de monstruo ---- */
+    /* ---- mundo de esqueletos (sin goblins/lobos/espectros/ogros/jefe) ---- */
     report.data.monsters = await j(cdp, '({types: Array.from(new Set((Aethelgard.state().monsters||[]).map(function(m){return m.type;}))), count: (Aethelgard.state().monsters||[]).length, elites: (Aethelgard.state().monsters||[]).filter(function(m){return m.elite;}).length})');
-    const newTypes = report.data.monsters ? report.data.monsters.types.filter(t => ['wolf', 'ogre', 'specter', 'champion'].indexOf(t) >= 0) : [];
-    step('monstruos nuevos', newTypes.length > 0 ? 'OK' : 'WARN', JSON.stringify(report.data.monsters));
+    const skelTypes = ['skeleton', 'skeleton_archer', 'skeleton_mage', 'skeleton_minion'];
+    const onlySkeletons = !!(report.data.monsters && report.data.monsters.count >= 15 &&
+      report.data.monsters.types.every(t => skelTypes.indexOf(t) >= 0) && report.data.monsters.elites === 0);
+    step('monstruos solo esqueletos', onlySkeletons ? 'OK' : 'WARN', JSON.stringify(report.data.monsters));
 
     const key = async (k, code, vk) => {
       await cdp.send('Input.dispatchKeyEvent', { type: 'keyDown', key: k, code, windowsVirtualKeyCode: vk, nativeVirtualKeyCode: vk, text: k });

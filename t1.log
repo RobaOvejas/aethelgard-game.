@@ -1,0 +1,19 @@
+[server] Cargando mundo 200x200 normal
+[admin] Cuenta Admin creada (contrasena: admin1234). Cambiala con AETHELGARD_ADMIN_PASSWORD.
+[state] Datos demo creados en C:\Users\Myke\AppData\Local\Temp\aeth-armasdata\state.json
+[state] Usuarios cargados: 3 | Personajes: 3
+============================================================
+  AETHELGARD - LEGACY OF SHADOWS
+  Backend v2.4.0 | Node.js + Express + Socket.IO
+============================================================
+  URL: http://localhost:3197
+  Tick de mundo: 150 ms
+  Usuarios cargados: 3
+  Personajes cargados: 3
+  Monstruos activos: 20
+  Persistencia: C:\Users\Myke\AppData\Local\Temp\aeth-armasdata\state.json
+============================================================
+[socket] Conectado: Admin
+[socket] Desconectado: Admin
+[socket] Conectado: Admin
+[socket] Desconectado: Admin

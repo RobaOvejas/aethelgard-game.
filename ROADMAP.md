@@ -22,8 +22,15 @@ de consola. Lo que queda, por orden de impacto.
 - **Monstruos con modelo**: 4 esqueletos KayKit (guerrero, arquero, mago y minion) con textura embebida,
   escalado automático, animaciones KayKit reutilizadas y fallback procedural; tipos `skeleton_archer`,
   `skeleton_mage` y `skeleton_minion` documentados en `PROTOCOL.md`.
+- **Mundo solo de esqueletos**: retirados goblin, lobo, espectro, campeón, ogro y jefe Lord Kundun;
+  20 spawns y botín redistribuidos entre los 4 esqueletos; quests q1/q3/q4/q5 reescritas.
 - **Universal Animation Library** (UAL, Quaternius CC0) retargetizada al rig KayKit, con selector
-  Universal/KayKit en Ajustes (integración de OpenCode).
+  Universal/KayKit en Ajustes (integración de OpenCode). Pendiente: no bloquear el render mientras
+  retargetea (tarda minutos en headless).
+- **Cuenta ADMIN y panel de administración (v2.4)**: `Admin`/`admin1234` (o
+  `AETHELGARD_ADMIN_PASSWORD`), 14 eventos `admin*`, comandos `/spawn`, `/tp`, `/give`, `/gold`,
+  `/level`, `/stat`, `/heal`, `/god`, `/killall`, `/clear`, `/drop`, `/monsters`, panel con spawn,
+  eliminación, teleport, objetos, atributos, modo dios y lista de esqueletos.
 
 ## 1. Crítico / operación
 
