@@ -599,7 +599,7 @@ body.touch #mobile-ui{display:block}
         <button type="submit" class="btn-primary" id="btn-submit">Entrar al mundo</button>
         <button type="button" class="btn-ghost" id="btn-offline">▶ Jugar demo sin servidor (offline)</button>
       </form>
-      <div class="auth-foot">Cuentas demo: <code>demo</code> / <code>demo1234</code> · <code>kundun</code> / <code>kundun1234</code> · <span id="auth-version">v2.3.0</span></div>
+      <div class="auth-foot">Cuentas demo: <code>demo</code> / <code>demo1234</code> · <code>kundun</code> / <code>kundun1234</code> · <code>Admin</code> / <code>admin1234</code> · <span id="auth-version">v2.4.0</span></div>
     </div>
   </section>
 </div>
@@ -645,6 +645,26 @@ body.touch #mobile-ui{display:block}
   .cast-bar .fill{background:linear-gradient(90deg,#8a6a24,#f0d078);width:0}
   .net-offline{color:var(--err)}
   .scroll-thin{scrollbar-width:thin}
+  /* v2.4: panel de administración */
+  .admin-title{font-size:11px;letter-spacing:.08em;color:var(--gold);margin-bottom:8px;text-transform:uppercase}
+  .admin-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+  .admin-row .btn{flex:1 1 auto;min-width:92px}
+  .admin-grid{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-end;margin-bottom:8px;
+    border-top:1px solid #1c2621;padding-top:8px}
+  .admin-grid label{display:flex;flex-direction:column;gap:2px;font-size:9.5px;color:#8fa198;
+    text-transform:uppercase;letter-spacing:.06em}
+  .admin-grid input,.admin-grid select{width:86px;padding:4px 6px;background:#0a0f0c;color:#e8e2d2;
+    border:1px solid #22312a;border-radius:5px;font-family:inherit;font-size:11px}
+  .admin-grid.stats label input{width:58px}
+  .admin-sub{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#c9b982;
+    margin:6px 0 4px;border-top:1px solid #1c2621;padding-top:7px}
+  .admin-list{max-height:150px;overflow:auto;display:flex;flex-direction:column;gap:4px}
+  .admin-item{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:10.5px;
+    color:#b9c6bd;padding:3px 6px;background:#0b1210;border:1px solid #1b2620;border-radius:5px}
+  .admin-item .btn.tiny{padding:2px 7px;font-size:9.5px}
+  .admin-empty{font-size:10.5px;color:#6a7a72;padding:6px 0}
+  .admin-hint{margin-top:8px;font-size:9.5px;line-height:1.55;color:#6f8177;
+    border-top:1px solid #1c2621;padding-top:7px;word-break:break-word}
 </style>
 
 <div id="tooltip"></div>
@@ -771,6 +791,7 @@ body.touch #mobile-ui{display:block}
     <button class="menu-btn" id="btn-trade"><span class="lead"><span class="ic">⚖️</span>Comercio</span><span class="kbd">C</span></button>
     <button class="menu-btn" id="btn-help"><span class="lead"><span class="ic">❓</span>Ayuda</span><span class="kbd">H</span></button>
     <button class="menu-btn" id="btn-settings"><span class="lead"><span class="ic">⚙️</span>Ajustes</span><span class="kbd">O</span></button>
+    <button class="menu-btn" id="btn-admin" style="display:none"><span class="lead"><span class="ic">🛠️</span>Admin</span><span class="kbd">G</span></button>
   </nav>
 </div>
 
@@ -1185,6 +1206,7 @@ const Aethelgard = (function () {
     mode: 'boot', online: false, transport: 'offline', latency: 0, onlineCount: 1,
     authToken: null,
     party: null, partyInvite: null,
+    adminMonsters: [],
     me: null, players: [], monsters: [], drops: [],
     targetId: null, targetKind: null,
     cds: {}, buffs: [], kills: {}, floating: [], projectiles: [],
@@ -1232,6 +1254,8 @@ const Aethelgard = (function () {
     c.inventory = (c.inventory || []).filter(e => e && e.itemId);
     c.quests = c.quests || [];
     c.gridX = c.gridX == null ? 3 : c.gridX; c.gridY = c.gridY == null ? 3 : c.gridY;
+    c.admin = !!c.admin;
+    c.god = !!c.god;
     return c;
   }
 
@@ -1283,7 +1307,7 @@ const Aethelgard = (function () {
         s.on('connect_error', () => done(false));
         const EVENTS = ['world', 'updateWorld', 'combat', 'combatResult', 'charUpdate', 'levelUp', 'chat',
           'loot', 'questUpdate', 'toast', 'death', 'respawned', 'online', 'shopStock', 'buff', 'teleportFx',
-          'partyUpdate', 'partyInvite'];
+          'partyUpdate', 'partyInvite', 'adminResult', 'adminMonsters'];
         EVENTS.forEach(ev => s.on(ev, payload => dispatch(ev, payload)));
         s.on('disconnect', reason => {
           S.online = false; S.transport = 'reconectando';
@@ -2445,11 +2469,22 @@ const Aethelgard = (function () {
 
     function updateCamera(dt) {
       if (!cam.target || !camera) return;
+      // Suavizado del objetivo: el servidor avanza a saltos de celda; sin esto la cámara
+      // "tiembla" al caminar con el ratón. La posición y el lookAt usan un objetivo filtrado.
+      if (!cam.smooth || !cam.smooth.init) {
+        cam.smooth = { x: cam.target.x, y: cam.target.y, z: cam.target.z, init: true };
+      } else {
+        const k = Math.min(1, Math.max(0.02, dt * 9));
+        cam.smooth.x = lerp(cam.smooth.x, cam.target.x, k);
+        cam.smooth.y = lerp(cam.smooth.y, cam.target.y, k);
+        cam.smooth.z = lerp(cam.smooth.z, cam.target.z, k);
+      }
+      const tx = cam.smooth.x, ty = cam.smooth.y, tz = cam.smooth.z;
       const ry = cam.yaw * Math.PI / 180, rx = cam.pitch * Math.PI / 180;
       const d = cam.dist;
-      const px = cam.target.x + Math.cos(ry) * Math.cos(rx) * d;
-      const py = cam.target.y + Math.sin(rx) * d;
-      const pz = cam.target.z + Math.sin(ry) * Math.cos(rx) * d;
+      const px = tx + Math.cos(ry) * Math.cos(rx) * d;
+      const py = ty + Math.sin(rx) * d;
+      const pz = tz + Math.sin(ry) * Math.cos(rx) * d;
       camera.position.x = lerp(camera.position.x, px, Math.min(1, cam.smoothing * (dt * 60)));
       camera.position.y = lerp(camera.position.y, py, Math.min(1, cam.smoothing * (dt * 60)));
       camera.position.z = lerp(camera.position.z, pz, Math.min(1, cam.smoothing * (dt * 60)));
@@ -2460,7 +2495,7 @@ const Aethelgard = (function () {
         cam.shake *= Math.pow(0.02, dt);
         if (cam.shake < 0.01) cam.shake = 0;
       }
-      camera.lookAt(cam.target.x, cam.target.y + 1.2, cam.target.z);
+      camera.lookAt(tx, ty + 1.2, tz);
     }
 
     function resize() {
@@ -2504,6 +2539,14 @@ const Aethelgard = (function () {
       add: o => { if (ok) scene.add(o); }, remove: o => { if (ok) scene.remove(o); },
       natureState: natureState,
       beginDecorAssets: beginDecorAssets,
+      cameraState: function () {
+        return {
+          yaw: cam.yaw, pitch: cam.pitch, dist: cam.dist,
+          target: cam.target ? { x: cam.target.x, y: cam.target.y, z: cam.target.z } : null,
+          smooth: cam.smooth ? { x: cam.smooth.x, y: cam.smooth.y, z: cam.smooth.z } : null,
+          position: camera ? camera.position.toArray() : null
+        };
+      },
       get scene() { return scene; }, get camera() { return camera; }, get ok() { return ok; },
       get sun() { return sun; }, cam: cam, shake: a => { cam.shake = Math.min(2.2, cam.shake + a); },
       get nightFactor() { const s = Math.sin(timeOfDay.t * Math.PI * 2 - Math.PI / 2); return clamp(1 - (s * 1.15 + 0.18), 0, 1); }
@@ -2625,7 +2668,7 @@ const Aethelgard = (function () {
     };
     const CHAR_HEIGHT = 3.0;      // altura en unidades de mundo (los nameplates van a 3.95)
     const CHAR_YAW = 0;           // orientación del GLB respecto al frente del juego (+Z)
-    const charAssets = { ready: false, unavailable: false, loading: null, models: Object.create(null), clips: Object.create(null), ualReady: false, ualCount: 0 };
+    const charAssets = { ready: false, unavailable: false, loading: null, models: Object.create(null), clips: Object.create(null), ualReady: false, ualLoading: false, ualCount: 0 };
 
     /* ---- Monstruos con modelo (KayKit Skeletons, CC0): 4 GLB con textura embebida.
        Comparten el rig de 23 huesos de los personajes, así que reutilizan sus clips. */
@@ -2641,12 +2684,20 @@ const Aethelgard = (function () {
 
     /* ---- Armas visibles (KayKit Adventurers): se acoplan al hueso de la mano derecha ---- */
     const WEAPON_FILES = {
-      item_1: 'sword_1handed', item_4: 'axe_2handed', item_8: 'staff',
-      item_15: 'bow_withString', item_16: 'dagger', item_17: 'staff'
+      item_1: 'sword_B', item_4: 'axe_C', item_8: 'staff_A',
+      item_15: 'bow_A_withString', item_16: 'dagger_A', item_17: 'staff_B'
     };
     // Mano secundaria por clase (escudo / libro): cosmética, no ocupa slot de inventario.
-    const OFFHAND_BY_CLASS = { DarkKnight: 'shield_round', ArcaneSorcerer: 'spellbook_closed', Priest: 'spellbook_closed' };
-    const OFFHAND_FILES = ['shield_round', 'spellbook_closed'];
+    const OFFHAND_BY_CLASS = { DarkKnight: 'shield_A', ArcaneSorcerer: 'spellbook_closed', Priest: 'spellbook_closed' };
+    const OFFHAND_FILES = ['shield_A', 'spellbook_closed'];
+    // Armas de los esqueletos: mismo pack (Texturas de Armas) y su textura dedicada.
+    const MONSTER_WEAPON_FILES = {
+      skeleton: 'sword_B',
+      skeleton_archer: 'bow_A_withString',
+      skeleton_mage: 'staff_B',
+      skeleton_minion: 'dagger_B'
+    };
+    const MONSTER_OFFHAND_FILES = { skeleton: 'shield_A' };
     const WEAPON_BASE = 'assets/characters/weapons/';
     const WEAPON_BONE = 'handslotr';
     // three.js sanea los nombres de nodo (quita puntos), por eso se prueban ambas variantes.
@@ -2657,13 +2708,13 @@ const Aethelgard = (function () {
     const WEAPON_ROT = { x: 0, y: 0, z: 0 };
     // Ajuste en caliente (calibración visual / depuración).
     const weaponTune = { rot: { x: WEAPON_ROT.x, y: WEAPON_ROT.y, z: WEAPON_ROT.z }, offset: { x: WEAPON_OFFSET.x, y: WEAPON_OFFSET.y, z: WEAPON_OFFSET.z } };
-    const weaponAssets = { ready: false, loading: null, models: Object.create(null) };
+    const weaponAssets = { ready: false, loading: null, models: Object.create(null), fixes: Object.create(null) };
 
     /* ---- Tinte por rareza del arma (PROTOCOL v2.3 A5) ----
        Cada instancia clona sus materiales (no comparte tinte con otros jugadores) y mezcla
        el color base con el de rareza al 35 %. common = sin tinte (blanco neutro). */
     const RARITY_TINT = { common: 0xffffff, uncommon: 0x7ef29a, rare: 0x7fb2ff, epic: 0xc58cff, legendary: 0xffd36b };
-    const RARITY_TINT_STRENGTH = 0.35;
+    const RARITY_TINT_STRENGTH = 0.18;
     function tintWeapon(inst, itemId) {
       const item = ITEMS[itemId];
       const rarity = item && item.rarity ? item.rarity : 'common';
@@ -2701,6 +2752,20 @@ const Aethelgard = (function () {
       return { rot: weaponTune.rot, offset: weaponTune.offset };
     }
 
+    /* Los modelos del pack de armas no comparten eje: la hoja/asta puede venir en X, Y o Z.
+       Se detecta el eje más largo y se calcula un cuarto de giro para dejarlo vertical (Y). */
+    function weaponOrientationFix(scene) {
+      const box = new T.Box3().setFromObject(scene);
+      const size = new T.Vector3(); box.getSize(size);
+      const q = new T.Quaternion();
+      if (size.z > size.y * 1.2 && size.z > size.x * 1.2) {
+        q.setFromAxisAngle(new T.Vector3(1, 0, 0), -Math.PI / 2);
+      } else if (size.x > size.y * 1.2 && size.x > size.z * 1.2) {
+        q.setFromAxisAngle(new T.Vector3(0, 0, 1), Math.PI / 2);
+      }
+      return q;
+    }
+
     function findHandBone(scene) {
       if (!scene) return null;
       for (const name of WEAPON_BONES) {
@@ -2716,34 +2781,47 @@ const Aethelgard = (function () {
         try {
           if (!(await GLTF.ensure())) return false;
           const loader = new T.GLTFLoader();
-          const entries = Object.keys(WEAPON_FILES).map(function (itemId) { return { key: itemId, file: WEAPON_FILES[itemId] }; })
-            .concat(OFFHAND_FILES.map(function (file) { return { key: file, file: file }; }));
+          const files = new Set();
+          Object.keys(WEAPON_FILES).forEach(function (itemId) { files.add(WEAPON_FILES[itemId]); });
+          OFFHAND_FILES.forEach(function (file) { files.add(file); });
+          Object.keys(MONSTER_WEAPON_FILES).forEach(function (type) { files.add(MONSTER_WEAPON_FILES[type]); });
+          Object.keys(MONSTER_OFFHAND_FILES).forEach(function (type) { files.add(MONSTER_OFFHAND_FILES[type]); });
+          const entries = Array.from(files);
           for (let start = 0; start < entries.length; start += 3) {
-            await Promise.all(entries.slice(start, start + 3).map(async function (entry) {
+            await Promise.all(entries.slice(start, start + 3).map(async function (file) {
               try {
-                const g = await GLTF.load(loader, WEAPON_BASE + entry.file + '.gltf');
+                const g = await GLTF.load(loader, WEAPON_BASE + file + '.gltf');
                 let mesh = null;
                 g.scene.traverse(o => { if (!mesh && o.isMesh) mesh = o; });
                 if (!mesh) return;
-                const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-                mats.forEach(mm => {
-                  if (!mm) return;
-                  if (mm.map) {
-                    mm.map.anisotropy = 4;
-                    if (T.sRGBEncoding != null) mm.map.encoding = T.sRGBEncoding;
-                    mm.map.needsUpdate = true;
-                  }
-                  mm.needsUpdate = true;
+                g.scene.traverse(o => {
+                  if (!o.isMesh) return;
+                  o.castShadow = true; o.receiveShadow = false; o.frustumCulled = false;
+                  const mats = Array.isArray(o.material) ? o.material : [o.material];
+                  mats.forEach(mm => {
+                    if (!mm) return;
+                    if (mm.map) {
+                      mm.map.anisotropy = 4;
+                      if (T.sRGBEncoding != null) mm.map.encoding = T.sRGBEncoding;
+                      mm.map.needsUpdate = true;
+                    }
+                    mm.needsUpdate = true;
+                  });
                 });
-                weaponAssets.models[entry.key] = g.scene;
+                weaponAssets.models[file] = g.scene;
+                weaponAssets.fixes[file] = weaponOrientationFix(g.scene);
               } catch (err) {
-                console.warn('[Aethelgard] Sin arma ' + entry.file + ': ' + (err && err.message ? err.message : err));
+                console.warn('[Aethelgard] Sin arma ' + file + ': ' + (err && err.message ? err.message : err));
               }
             }));
             await Promise.resolve();
           }
           weaponAssets.ready = Object.keys(weaponAssets.models).length > 0;
-          if (weaponAssets.ready) players.forEach(m => { if (m.gltf) { applyWeapon(m); applyOffhand(m); } });
+          if (weaponAssets.ready) {
+            players.forEach(m => { if (m.gltf) { applyWeapon(m); applyOffhand(m); } });
+            refreshMonsterModels();
+            monsters.forEach(m => { if (m.gltf) { attachMonsterWeapon(m); attachMonsterOffhand(m); } });
+          }
           return weaponAssets.ready;
         } catch (err) {
           console.warn('[Aethelgard] Armas no disponibles: ' + (err && err.message ? err.message : err));
@@ -2768,7 +2846,9 @@ const Aethelgard = (function () {
       m.gltf.scene.updateMatrixWorld(true);
       const q = new T.Quaternion();
       bone.getWorldQuaternion(q);
-      m.weaponGroup.quaternion.copy(q.invert());
+      const fix = m.weaponFix || null;
+      if (fix) m.weaponGroup.quaternion.copy(q.invert().multiply(fix));
+      else m.weaponGroup.quaternion.copy(q.invert());
       // Sacar el arma de la silueta del cuerpo: mano hacia fuera (dirección mano→centro).
       const handWorld = bone.getWorldPosition(new T.Vector3());
       const bodyWorld = m.group.getWorldPosition(new T.Vector3());
@@ -2796,8 +2876,11 @@ const Aethelgard = (function () {
       m.weaponGroup = null;
       m.weaponItem = itemId;
       m.weaponRarity = null;
-      const model = itemId ? weaponAssets.models[itemId] : null;
+      m.weaponFix = null;
+      const file = itemId ? WEAPON_FILES[itemId] : null;
+      const model = file ? weaponAssets.models[file] : null;
       if (!model) return;
+      m.weaponFix = weaponAssets.fixes[file] || null;
       const bone = findHandBone(g.scene);
       if (!bone) return;
       const inst = model.clone(true);
@@ -2851,6 +2934,65 @@ const Aethelgard = (function () {
       bone.add(inst);
       m.offhandGroup = inst;
       m.offhandAligned = true;
+    }
+
+    /* Armas visibles de los esqueletos (pack Texturas de Armas): la empuñan en la mano derecha. */
+    function attachMonsterWeapon(m) {
+      if (!m || !m.gltf || !m.gltf.scene || m.weaponGroup) return null;
+      const type = m.data && m.data.type;
+      const file = type ? MONSTER_WEAPON_FILES[type] : null;
+      const model = file ? weaponAssets.models[file] : null;
+      if (!model) return null;
+      const bone = findHandBone(m.gltf.scene);
+      if (!bone) return null;
+      const inst = model.clone(true);
+      inst.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = false; o.frustumCulled = false; o.userData.shared = true; } });
+      bone.add(inst);
+      m.weaponGroup = inst;
+      m.weaponFile = file;
+      m.weaponFix = weaponAssets.fixes[file] || null;
+      m.weaponAligned = false; // se alinea tras el primer mixer.update (pose Idle, no T-pose)
+      return inst;
+    }
+
+    /* Alineación del escudo del esqueleto, ya en su pose de animación. */
+    function alignMonsterOffhand(m) {
+      const g = m.offhandGroup;
+      if (!g || !m.gltf || !m.gltf.scene) return;
+      const bone = findLeftHandBone(m.gltf.scene);
+      if (!bone) return;
+      m.gltf.scene.updateMatrixWorld(true);
+      const qb = new T.Quaternion(); bone.getWorldQuaternion(qb);
+      const desired = new T.Quaternion().setFromAxisAngle(new T.Vector3(0, 1, 0), m.group.rotation.y);
+      g.quaternion.copy(qb.invert().multiply(desired));
+      const handWorld = bone.getWorldPosition(new T.Vector3());
+      const bodyWorld = m.group.getWorldPosition(new T.Vector3());
+      const outward = new T.Vector3(handWorld.x - bodyWorld.x, 0, handWorld.z - bodyWorld.z);
+      if (outward.lengthSq() < 1e-4) outward.set(1, 0, 0); else outward.normalize();
+      const targetWorld = handWorld.clone().addScaledVector(outward, 0.3);
+      targetWorld.y += 0.15;
+      g.position.copy(bone.worldToLocal(targetWorld.clone()));
+      g.updateMatrixWorld(true);
+      m.offhandAligned = true;
+    }
+
+    /* Escudo de los esqueletos guerreros (mano izquierda). */
+    function attachMonsterOffhand(m) {
+      if (!m || !m.gltf || !m.gltf.scene || m.offhandGroup) return null;
+      const type = m.data && m.data.type;
+      const file = type ? MONSTER_OFFHAND_FILES[type] : null;
+      const model = file ? weaponAssets.models[file] : null;
+      if (!model) return null;
+      const bone = findLeftHandBone(m.gltf.scene);
+      if (!bone) return null;
+      m.gltf.scene.updateMatrixWorld(true);
+      const inst = model.clone(true);
+      inst.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = false; o.frustumCulled = false; o.userData.shared = true; } });
+      bone.add(inst);
+      m.offhandGroup = inst;
+      m.offhandItem = file;
+      m.offhandAligned = false; // igual que el arma: alinear tras el primer frame de animación
+      return inst;
     }
 
     /* Solo depuración: fuerza el arma visible de un jugador (null para volver a la equipada). */
@@ -2983,31 +3125,14 @@ const Aethelgard = (function () {
             }
             await Promise.resolve();
           }
-          // Universal Animation Library: se retargetiza sobre el rig KayKit comun.
-          try {
-            const target = charAssets.models.DarkKnight || charAssets.models[Object.keys(charAssets.models)[0]];
-            if (target) {
-              const g = await GLTF.load(loader, UAL_FILE);
-              const ual = retargetUAL(g.scene, g.animations || [], target);
-              charAssets.ualCount = Object.keys(ual).length;
-              if (charAssets.ualCount) {
-                Object.keys(ual).forEach(function (name) {
-                  if (!charAssets.clips[name]) charAssets.clips[name] = ual[name];
-                });
-                charAssets.ualReady = true;
-                console.log('[Aethelgard] UAL: ' + charAssets.ualCount + ' clips retargetizados');
-              }
-            }
-          } catch (err) {
-            console.warn('[Aethelgard] Sin Universal Animation: ' + (err && err.message ? err.message : err));
-          }
-          await Promise.resolve();
           charAssets.ready = Object.keys(charAssets.models).length > 0;
           if (charAssets.ready) {
             players.forEach(m => { attachBody(m, true); });
             refreshMonsterModels();
             refreshMonsterAnimations();
-            console.log('[Aethelgard] Personajes: ' + Object.keys(charAssets.models).length + ' modelos, ' + Object.keys(charAssets.clips).length + ' clips' + (charAssets.ualReady ? ' (UAL activo)' : ''));
+            console.log('[Aethelgard] Personajes: ' + Object.keys(charAssets.models).length + ' modelos, ' + Object.keys(charAssets.clips).length + ' clips (UAL en segundo plano)');
+            // UAL se retargetiza DESPUÉS de mostrar el mundo: no bloquea el render ni el login.
+            setTimeout(function () { loadUALRetarget(loader); }, 150);
           } else {
             charAssets.unavailable = true;
           }
@@ -3019,6 +3144,34 @@ const Aethelgard = (function () {
         }
       })();
       return charAssets.loading;
+    }
+
+    /* Retarget de UAL en segundo plano: los personajes ya están visibles con KayKit.
+       Al terminar se añaden sus acciones a los mixers existentes sin recargar el modelo. */
+    function loadUALRetarget(loader) {
+      if (charAssets.ualLoading || charAssets.ualReady) return;
+      charAssets.ualLoading = true;
+      const target = charAssets.models.DarkKnight || charAssets.models[Object.keys(charAssets.models)[0]];
+      if (!target) return;
+      GLTF.load(loader, UAL_FILE).then(function (g) {
+        const ual = retargetUAL(g.scene, g.animations || [], target);
+        charAssets.ualCount = Object.keys(ual).length;
+        if (!charAssets.ualCount) { charAssets.ualLoading = false; return; }
+        Object.keys(ual).forEach(function (name) { if (!charAssets.clips[name]) charAssets.clips[name] = ual[name]; });
+        charAssets.ualReady = true;
+        charAssets.ualLoading = false;
+        players.forEach(function (m) {
+          const gg = m.gltf;
+          if (!gg || !gg.mixer) return;
+          Object.keys(ual).forEach(function (name) {
+            if (!gg.actions[name]) gg.actions[name] = gg.mixer.clipAction(ual[name]);
+          });
+        });
+        console.log('[Aethelgard] UAL: ' + charAssets.ualCount + ' clips retargetizados (segundo plano)');
+      }).catch(function (err) {
+        charAssets.ualLoading = false;
+        console.warn('[Aethelgard] Sin Universal Animation: ' + (err && err.message ? err.message : err));
+      });
     }
 
     function cloneCharacter(scene) {
@@ -3264,6 +3417,9 @@ const Aethelgard = (function () {
         const g = m.gltf;
         if (!g || !g.mixer) return;
         g.mixer.update(dt);
+        // Armas de monstruos: alinear una sola vez, ya con la pose de animación aplicada.
+        if (m.weaponGroup && !m.weaponAligned) alignWeapon(m);
+        if (m.offhandGroup && !m.offhandAligned) alignMonsterOffhand(m);
         const p = m.data || {};
         const dead = (p.hp || 0) <= 0;
         const attacking = m.attackT > 0;
@@ -3654,6 +3810,8 @@ const Aethelgard = (function () {
       if (!body) return;
       body.traverse(o => {
         if (!o.isMesh && !o.isSkinnedMesh) return;
+        // Armas acopladas: su geometría/material es compartida con weaponAssets; no liberar.
+        if (o.userData && o.userData.shared) return;
         if (o.geometry) o.geometry.dispose();
         const mats = Array.isArray(o.material) ? o.material : [o.material];
         mats.forEach(mm => { if (mm) mm.dispose(); });
@@ -3676,7 +3834,11 @@ const Aethelgard = (function () {
         m.body = built.group;
         m.parts = built.parts || {};
         m.gltf = built.gltf;
+        m.weaponGroup = null;
+        m.offhandGroup = null;
         m.group.add(m.body);
+        attachMonsterWeapon(m);
+        attachMonsterOffhand(m);
         if (built.plateY != null) {
           if (m.plate) m.plate.position.y = built.plateY + 0.35;
           if (m.hpBar) m.hpBar.group.position.y = built.plateY - 0.12;
@@ -3768,6 +3930,8 @@ const Aethelgard = (function () {
           gltf: !!g,
           meshes: meshes,
           texturedMeshes: textured,
+          weapon: m.weaponFile || null,
+          offhand: m.offhandItem || null,
           clip: g && g.current ? g.current.getClip().name : null
         });
       });
@@ -3802,6 +3966,7 @@ const Aethelgard = (function () {
       model.id = p.id; model.data = p; model.plate = plate; model.hpBar = hp;
       model.pos = { x: p.gridX, y: p.gridY }; model.dying = 0;
       monsters.set(p.id, model);
+      if (model.gltf) { attachMonsterWeapon(model); attachMonsterOffhand(model); }
       return model;
     }
 
@@ -4748,6 +4913,86 @@ const Aethelgard = (function () {
       }, 400);
     }
 
+    /* ---------------- ADMIN (solo cuentas ADMIN) ---------------- */
+    function adminWindow() {
+      if (!S.me || !S.me.admin) { UI.toast('Solo las cuentas ADMIN pueden abrir el panel.', 'warn', 2200); return; }
+      toggle('admin', 'Administración', body => {
+        const render = () => {
+          const c = S.me || {};
+          const types = Object.keys(MONSTERDEF);
+          const items = Object.keys(ITEMS);
+          const stats = ['str', 'dex', 'int', 'vit', 'wit', 'men'];
+          const list = S.adminMonsters || [];
+          const statInputs = stats.map(s => '<label>' + s.toUpperCase() + ' <input id="adm-stat-' + s + '" type="number" min="0" max="9999" value="' + ((c.stats && c.stats[s]) || 0) + '"></label>').join('');
+          const listHtml = list.length ? list.map(m =>
+            '<div class="admin-item"><span>' + esc(m.name) + ' · Nv' + m.level + ' · ' + m.hp + '/' + m.maxHp + ' @' + m.gridX + ',' + m.gridY + '</span>' +
+            '<button class="btn tiny danger" data-remove="' + esc(m.id) + '">Eliminar</button></div>').join('')
+            : '<div class="admin-empty">Sin esqueletos en el mundo: usa «Invocar».</div>';
+          body.innerHTML =
+            '<div class="admin-title">ADMIN · ' + esc(c.name || '') + ' · Nv <b>' + (c.level || 1) + '</b> · Oro <b>' + fmt(c.gold || 0) + '</b> · Dios <b>' + (c.god ? 'ON' : 'OFF') + '</b></div>' +
+            '<div class="admin-row">' +
+              '<button class="btn" data-a="god">Dios ' + (c.god ? 'ON' : 'OFF') + '</button>' +
+              '<button class="btn" data-a="heal">Curar todo</button>' +
+              '<button class="btn danger" data-a="killall">Matar todo</button>' +
+              '<button class="btn danger" data-a="clear">Limpiar esqueletos</button>' +
+              '<button class="btn" data-a="cleardrops">Limpiar drops</button>' +
+            '</div>' +
+            '<div class="admin-grid">' +
+              '<label>Nivel <input id="adm-level" type="number" min="1" max="100" value="' + (c.level || 1) + '"></label>' +
+              '<button class="btn" data-a="setlevel">Fijar nivel</button>' +
+              '<label>Oro <input id="adm-gold" type="number" value="10000"></label>' +
+              '<button class="btn" data-a="givegold">Dar oro</button>' +
+            '</div>' +
+            '<div class="admin-grid">' +
+              '<label>Tipo <select id="adm-type">' + types.map(t => '<option value="' + t + '">' + esc(MONSTERDEF[t].name) + '</option>').join('') + '</select></label>' +
+              '<label>X <input id="adm-x" type="number" value="' + ((c.gridX || 0) + 2) + '"></label>' +
+              '<label>Y <input id="adm-y" type="number" value="' + ((c.gridY || 0) + 2) + '"></label>' +
+              '<button class="btn" data-a="spawn">Invocar</button>' +
+            '</div>' +
+            '<div class="admin-grid">' +
+              '<label>TP X <input id="adm-tp-x" type="number" value="' + (c.gridX || 0) + '"></label>' +
+              '<label>TP Y <input id="adm-tp-y" type="number" value="' + (c.gridY || 0) + '"></label>' +
+              '<button class="btn" data-a="teleport">Teletransportar</button>' +
+            '</div>' +
+            '<div class="admin-grid">' +
+              '<label>Objeto <select id="adm-item">' + items.map(id => '<option value="' + id + '">' + esc((ITEMS[id] && ITEMS[id].name) || id) + '</option>').join('') + '</select></label>' +
+              '<label>Cant. <input id="adm-count" type="number" min="1" max="99" value="1"></label>' +
+              '<button class="btn" data-a="giveitem">Dar</button>' +
+              '<button class="btn" data-a="spawndrop">Al suelo</button>' +
+            '</div>' +
+            '<div class="admin-grid stats">' + statInputs + '<button class="btn" data-a="setstats">Aplicar atributos</button></div>' +
+            '<div class="admin-sub">Esqueletos (' + list.length + ')</div>' +
+            '<div class="admin-list">' + listHtml + '</div>' +
+            '<div class="admin-hint">Comandos: <b>/adminhelp</b> · /spawn skeleton 10 10 · /tp 10 10 · /give item_8 1 · /gold 10000 · /level 50 · /god · /killall · /clear · /drop item_3 · /monsters</div>';
+          const q = sel => body.querySelector(sel);
+          const num = sel => parseInt((q(sel) || {}).value, 10) || 0;
+          const act = (event, payload) => { Game.adminAction(event, payload); setTimeout(() => { if (isOpen('admin')) render(); }, 400); };
+          q('[data-a="god"]').addEventListener('click', () => act('adminGod', { on: !c.god }));
+          q('[data-a="heal"]').addEventListener('click', () => act('adminHeal', {}));
+          q('[data-a="killall"]').addEventListener('click', () => act('adminKillAll', {}));
+          q('[data-a="clear"]').addEventListener('click', () => act('adminClearMonsters', {}));
+          q('[data-a="cleardrops"]').addEventListener('click', () => act('adminClearDrops', {}));
+          q('[data-a="setlevel"]').addEventListener('click', () => act('adminSetLevel', { level: num('#adm-level') }));
+          q('[data-a="givegold"]').addEventListener('click', () => act('adminGiveGold', { amount: num('#adm-gold') }));
+          q('[data-a="spawn"]').addEventListener('click', () => act('adminSpawn', { type: (q('#adm-type') || {}).value, gridX: num('#adm-x'), gridY: num('#adm-y') }));
+          q('[data-a="teleport"]').addEventListener('click', () => act('adminTeleport', { gridX: num('#adm-tp-x'), gridY: num('#adm-tp-y') }));
+          q('[data-a="giveitem"]').addEventListener('click', () => act('adminGiveItem', { itemId: (q('#adm-item') || {}).value, count: Math.max(1, num('#adm-count')) }));
+          q('[data-a="spawndrop"]').addEventListener('click', () => act('adminSpawnDrop', { itemId: (q('#adm-item') || {}).value, gridX: c.gridX, gridY: c.gridY }));
+          q('[data-a="setstats"]').addEventListener('click', () => {
+            stats.forEach(s => {
+              const input = q('#adm-stat-' + s);
+              if (input) Game.adminAction('adminSetStat', { stat: s, value: parseInt(input.value, 10) || 0 });
+            });
+            setTimeout(() => { if (isOpen('admin')) render(); }, 600);
+          });
+          body.querySelectorAll('[data-remove]').forEach(b => b.addEventListener('click', () => act('adminRemove', { id: b.dataset.remove })));
+        };
+        render();
+        Game.adminRequestList();
+        return render;
+      }, 480);
+    }
+
     /* ---------------- AYUDA ---------------- */
     function helpWindow() {
       toggle('help', 'Guía del aventurero', body => {
@@ -5018,6 +5263,7 @@ const Aethelgard = (function () {
       toggle: toggle, close: close, closeAll: closeAll, isOpen: isOpen, refresh: refresh, refreshAll: refreshAll,
       renderTracker: renderTracker, renderParty: renderParty,
       inventory: inventoryWindow, character: charWindow, quests: questWindow, settings: settingsWindow,
+      admin: adminWindow,
       help: helpWindow, map: mapWindow, trade: tradeWindow, party: partyWindow, npc: npcWindow
     };
   })();
@@ -5395,6 +5641,22 @@ const Aethelgard = (function () {
       Windows.renderParty();
       Audio.play('click');
     }
+
+    /* ------------- administración (v2.4) ------------- */
+    function adminAction(event, payload) {
+      if (!S.me || !S.me.admin) { UI.toast('Solo ADMIN puede hacer esto.', 'warn', 1800); return; }
+      Net.send(event, payload || {}, res => {
+        if (res && res.ok === false) UI.toast('Acción admin rechazada', 'warn', 1600);
+        if (Windows.isOpen('admin')) setTimeout(() => Windows.refresh('admin'), 320);
+      });
+      Audio.play('click');
+    }
+    function adminRequestList() {
+      if (S.online) Net.send('adminList', {});
+    }
+    function adminState() {
+      return { admin: !!(S.me && S.me.admin), god: !!(S.me && S.me.god), monsters: (S.adminMonsters || []).length };
+    }
     function sortInventory() {
       if (!S.me) return;
       if (S.online) { UI.toast('Ordenar solo está disponible en modo local', 'warn', 1800); return; }
@@ -5435,6 +5697,7 @@ const Aethelgard = (function () {
         else if (k === 'h') Windows.help();
         else if (k === 'c') Windows.trade();
         else if (k === 'y') Windows.party();
+        else if (k === 'g') { if (S.me && S.me.admin) Windows.admin(); }
         else if (k === 'u') Windows.inventory();
       });
       document.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
@@ -5581,6 +5844,7 @@ const Aethelgard = (function () {
       bind('btn-trade', () => Windows.trade());
       bind('btn-help', () => Windows.help());
       bind('btn-settings', () => Windows.settings());
+      bind('btn-admin', () => Windows.admin());
       bind('mm-in', () => Minimap.zoomBy(1.3));
       bind('mm-out', () => Minimap.zoomBy(1 / 1.3));
       bind('mm-map', () => Windows.map());
@@ -5605,6 +5869,12 @@ const Aethelgard = (function () {
         else {
           Entities.sync({ players: S.players, monsters: S.monsters, drops: S.drops }, S.me ? S.me.id : null);
           Entities.tick(dt);
+          // La cámara sigue la posición VISUAL del jugador (interpolada), no la celda del
+          // servidor: elimina el jaloneo al caminar con el ratón y también funciona en demo.
+          if (S.me) {
+            const ep = Entities.posOf(S.me.id);
+            if (ep) World3D.cam.target = { x: ep.x, y: 1.4, z: ep.z };
+          }
           Projectiles.update(dt);
           World3D.render(dt);
         }
@@ -5672,6 +5942,7 @@ const Aethelgard = (function () {
       cast: cast, pickup: pickup, useItem: useItem, equip: equip, unequip: unequip, quest: quest,
       dropItem: dropItem, sell: sell, buy: buy, allocStat: allocStat, requestShop: requestShop,
       sortInventory: sortInventory, respawn: respawn,
+      adminAction: adminAction, adminRequestList: adminRequestList, adminState: adminState,
       partyInvite: partyInvite, partyAccept: partyAccept, partyDecline: partyDecline, partyLeave: partyLeave,
       setTarget: setTarget, setTyping: setTyping, bindInput: bindInput, applyNameVisibility: applyNameVisibility,
       setFallback: function (v) { fallback2d = v; },
@@ -5682,6 +5953,15 @@ const Aethelgard = (function () {
   /* ------------------------------------------- 9b. RED → ESTADO / HUD */
   let zoneName = '';
   function wireNet() {
+    Net.on('adminResult', d => { if (d && d.message) UI.toast(d.message, d.ok ? 'success' : 'warn', 2200); });
+    Net.on('adminMonsters', d => { S.adminMonsters = (d && d.monsters) || []; if (Windows.isOpen('admin')) Windows.refresh('admin'); });
+    Net.on('charUpdate', p => {
+      if (!p || !p.char || !S.me || p.char.id !== S.me.id) return;
+      S.me.admin = !!p.char.admin;
+      S.me.god = !!p.char.god;
+      const btn = document.getElementById('btn-admin');
+      if (btn && S.me.admin) btn.style.display = '';
+    });
     Net.on('world', w => {
       S.lastWorldAt = now(); S.worldSeq++;
       S.players = w.players || [];
@@ -6031,6 +6311,13 @@ const Aethelgard = (function () {
     UI.Messages.add({ kind: 'system', from: 'Sistema', channel: 'system', text: 'Interfaz v2 cargada. Pulsa H para la guía, I para el inventario, M para el mapa.' });
     UI.Messages.add({ kind: 'system', from: 'Sistema', channel: 'system', text: 'Habla con el Anciano Sabio (celda 10,10) para aceptar tu primera misión.' });
     if (!S.online) Audio.unlock();
+    if (S.me.admin) {
+      const adminBtn = document.getElementById('btn-admin');
+      if (adminBtn) adminBtn.style.display = '';
+      S.adminMonsters = [];
+      Game.adminRequestList();
+      UI.toast('Cuenta ADMIN: panel en 🛠️ Admin (tecla G) y comandos /adminhelp.', 'info', 3600);
+    }
     if ((S.me.statPoints || 0) > 0) document.getElementById('btn-char').classList.add('badge');
     const startZone = UI.Zone.at(S.me.gridX, S.me.gridY);
     World3D.setZone(startZone.fog);
@@ -6166,15 +6453,17 @@ const Aethelgard = (function () {
   }
 
   return {
-    stage: stage, boot: boot, version: '2.3.0',
+    stage: stage, boot: boot, version: '2.4.0',
     state: function () { return S; },
     settings: function () { return Settings; },
     worldOk: function () { return World3D.ok; },
     characterAssets: function () { return Entities.characterAssets(); },
     monsterAssets: function () { return Entities.monsterAssets(); },
     worldAssets: function () { return World3D.natureState(); },
+    cameraState: function () { return World3D.cameraState(); },
     animState: function () { return Entities.animState(); },
     weaponState: function () { return Entities.equipmentState(); },
+    adminState: function () { return Game.adminState(); },
     previewWeapon: function (itemId) { return Entities.previewWeapon(S.me && S.me.id, itemId); },
     previewHelm: function (itemId) { return Entities.previewHelm(S.me && S.me.id, itemId); },
     partyState: function () { return { party: S.party, invite: S.partyInvite }; },
